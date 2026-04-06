@@ -1,0 +1,90 @@
+@import "tailwindcss";
+@import "react-day-picker/style.css";
+
+:root {
+  --background: #f7f7f7;
+  --foreground: #232323;
+  --primary: #0197CA;
+  --secondary: #026b93;
+
+  --secondary-cal: #FFFA;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+
+  --font-outfit: var(--font-outfit);
+}
+
+.rdp-root{
+  --rdp-accent-color: var(--primary);
+  --rdp-range_start-background: var(--secondary-cal);
+  --rdp-range_end-background: var(--secondary-cal);
+  --rdp-range_middle-color: black;
+}
+
+.rdp-day.rdp-selected.rdp-range_start, 
+.rdp-day.rdp-selected.rdp-range_start:has(.rdp-today){
+  border-radius: 50% 0 0 50%;
+}
+
+.rdp-day.rdp-selected.rdp-range_end:first-child, .rdp-day.rdp-selected.rdp-range_start:last-child{
+  border-radius: 50% !important;
+}
+
+.rdp-day.rdp-selected.rdp-range_middle{
+  background: var(--secondary-cal);
+}
+
+.rdp-day.rdp-selected.rdp-range_middle:first-child{
+  border-radius: 50% 0 0 50%;
+}
+
+.rdp-day.rdp-selected.rdp-range_middle:last-child{
+  border-radius: 0 50% 50% 0;
+}
+
+.rdp-day.rdp-selected.rdp-range_end, .rdp-day.rdp-selected.rdp-range_end:has(.rdp-today){
+  border-radius: 0 50% 50% 0;
+}
+
+.rdp-today.rdp-selected.rdp-range_start, .rdp-today.rdp-selected.rdp-range_end{
+  background: var(--secondary-cal) !important;
+}
+
+.rdp-today.rdp-selected.rdp-range_middle{
+  border-radius: 0%;
+}
+
+.rdp-today.rdp-selected.rdp-range_middle > .rdp-day_button{
+  color: var(--color-secondary);
+}
+
+.rdp-today:not(.rdp-outside){
+  color: white;
+  background-color: var(--color-secondary);
+  border-radius: 50%;
+  font-weight: 600;
+}
+
+.rdp-month_grid {
+  border-collapse: separate;
+  border-spacing: 0 5px; /* horizontal vertical */
+}
+
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+} */
+
+body {
+  /* background: var(--background);
+  color: var(--foreground); */
+  font-family: "Outfit", Helvetica, sans-serif;
+}
