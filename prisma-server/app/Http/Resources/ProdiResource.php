@@ -16,7 +16,9 @@ class ProdiResource extends JsonResource
     {
         return [
             'prodi_id' => $this->prodi_id, 
-            'nama_prodi' => $this->nama_prodi
+            'nama_prodi' => $this->nama_prodi,
+            'kaprodi'    => $this->kaprodi,
+            'kaprodi_id' => $this->kaprodi?->id,
         ];
     }
 }

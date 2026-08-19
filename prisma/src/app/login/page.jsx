@@ -8,8 +8,8 @@ import { useLoaderStore } from "../stores/useLoaderStore"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons'
-
-import { initAuth, web } from "../lib/api"
+import { initAuth, web } from "../component/Libraries/utils/api"
+import Button from "@/app/component/Inputs/Button"
 
 export default function Login(){
     const router = useRouter()
@@ -84,7 +84,9 @@ export default function Login(){
                         />
                     </div>
 
-                    <button onClick={handleLogin} disabled={loading} className="bg-primary hover:bg-secondary text-white text-lg px-5 py-2 rounded-lg font-medium mt-1 transition-colors duration-300 ease-in-out">{loading ? "Loading..." : "Masuk"}</button>
+                    <Button onClick={handleLogin} disabled={loading}>
+                        {loading ? "Loading..." : "Masuk"}
+                    </Button>
                 </div>
             </div>
         </main>

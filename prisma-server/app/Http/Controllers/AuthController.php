@@ -30,7 +30,8 @@ class AuthController extends Controller
             return response()->json([
                 "id" => $user->id,
                 "nama" => $user->nama,
-                "role" => $user->role
+                "role" => $user->role,
+                "avatar" => $user->avatar_url,
             ]);
 
         } catch (\Throwable $e) {
@@ -40,5 +41,24 @@ class AuthController extends Controller
                 'message' => 'Login failed'
             ], 500);
         }
-    }   
+    }
+
+    public function logout(Request $request){
+        try {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return response()->json([
+                'message' => 'Logged out'
+            ]);
+
+        } catch (\Throwable $e) {
+            \Log::error($e);
+
+            return response()->json([
+                'message' => 'Logout failed'
+            ], 500);
+        }
+    }
 }

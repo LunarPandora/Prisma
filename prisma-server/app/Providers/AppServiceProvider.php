@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use App\Services\Scholar\GoogleScholarProvider;
+use App\Services\Scholar\SerpApiProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(GoogleScholarProvider::class, SerpApiProvider::class);
     }
 
     /**
@@ -19,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Relation::morphMap([
+            'Skema' => \App\Models\Skema::class,
+            'KegiatanPengajuan' => \App\Models\KegiatanPengajuan::class,
+        ]);
     }
 }

@@ -1,6 +1,6 @@
 import { Outfit } from "next/font/google";
-import AppLoader from "./component/AppLoader";
 import "./globals.css";
+import AppLoader from "./component/AppLoader/AppLoader";
 
 const outfit = Outfit({
   variable: "--font-outfit",

@@ -4,6 +4,7 @@ import { useUserStore } from "../stores/useUserStore"
 import { useLoaderStore } from "../stores/useLoaderStore"
 import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { ToastContainer } from "../component/Toast/Toast"
 
 export default function DashboardLayout({ children }) {
     const user = useUserStore(state => state.user)
@@ -21,6 +22,12 @@ export default function DashboardLayout({ children }) {
 
     useEffect(() => {
         if (!hasHydrated) return;
+
+        // Reset hasTriggered when user logs in
+        if (user) {
+            hasTriggered.current = false;
+            return;
+        }
 
         // Case 1: never logged in -> instant redirect
         if (!user && !sessionExpired && !justLoggedOut) {
@@ -56,6 +63,7 @@ export default function DashboardLayout({ children }) {
     return (
         <>
             {!hasHydrated ? null : user ? children : null}
+            <ToastContainer />
         </>
     )
 }

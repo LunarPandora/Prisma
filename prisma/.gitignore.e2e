@@ -1,0 +1,6 @@
+test-results/
+test-results/artifacts/
+test-results/html/
+tests/e2e/.auth/
+playwright-report/
+blob-report/

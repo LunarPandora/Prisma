@@ -1,0 +1,45 @@
+{
+  "cookies": [
+    {
+      "name": "XSRF-TOKEN",
+      "value": "eyJpdiI6IllSNWlmNCtRTnplR2VxK1hjOUZUMFE9PSIsInZhbHVlIjoiOUppRFR6V0txNk9mRDluc013RnNWenVGb1hBU0hwUlBQdGZtT2RFQTJJUUZYNjhxYkt3d0xsV2NVeUNZb0R6Z2FtUVMvYTBUNXFGV3NFY01qSWMzMDZHZC9XN2dJb3pqclhFTUdpZk96SEVyQUFsUnBxdFNWcWZyZUduWXFlZHAiLCJtYWMiOiIyM2JiYjk2ODhjMjk5ZjUzYjgyMjg5ZGQ1MGY3MGI3Y2Y1YWRhMWYxZjY2NTYxNTg5ZThkNzY0NmNlMDhlNDEzIiwidGFnIjoiIn0%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787182906.451268,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "laravel-session",
+      "value": "eyJpdiI6InFCdnNuQUxrRCt6RG1JejBDWFdTYnc9PSIsInZhbHVlIjoidFdmTTVuUmcxMzI1NE1JNUZ0b1dQUllJcFBnb2pGR0ZNNityZ1UySFJtMDM3OG5wTE1Mc1dscXRJZUtDSWJwcFh0T3BlVGQ1cDNKMWsrTkd6REpTNW9ZQ29iOEdwRGI0ZkJQQ25zM3FCYzdDNXlTQlJvS2tqeldzTmpvNEdkeHIiLCJtYWMiOiIyMjNhOWFhMTYwNjFiMmFmMzYwNjg3OTFlZTAyNjhkZGFhNzI4MmNiMGVlNzRiZTVjY2M4NzY1YTQ1M2VmOGVmIiwidGFnIjoiIn0%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787182906.451346,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "D3ehKdCZb5yfVojsarZqDeIQaL8kpV3CdOzrhWEY",
+      "value": "eyJpdiI6Inc4ZHRUdjNGSGxOeHhxRjFZaEdvZWc9PSIsInZhbHVlIjoidEEzZ01PSWNSZFh1U2txckJPZDNqQWhYeHJHY0hCclB5bXRKTDYvYXFsdUFKWUpKWWxsdy9xQ3hNLzErUnVjUDVubnUxMVVrNEJRU05yOHYwZk0rZytlZkRwNnQ1L0NXTC95NzR5NVpWSHYydkxLYU9GYzJqenEvZTRNSnExb2s2eWxjdlRhNGZUN1VTY3BhUUZuRzFuRkZvMEpBSnBuTXFadTgvbm1BRWo4R0RZOGZnRWhaQ0h3SUZHbmpWa2Y0bE9VdHFNNmVUb1doY2d3UTVqV2NsU2lrNWRSa3hJSGp6L29ETHp0T1FvY05CVmVRdkthUWNHNGs5THd0VnJ2a0phdm1TcDVIa1grMjV3TFBKOWdWRTFjMWZUWlEvdDNPWFFYL1NoNlVxNExyWGFRa0FFUEVVL3lseEFFTG9JVXhJajBmaEM0dk1FeFlwMk04SUpJTnJCZ25hNHJvc1hnWEtLVEh0ak9RY3lRVjdIYkRNa1RmbWJ6KzlTRHFHMkxPc0VZR0RMWHZ0U1lJTjRQUWo4bzEzUGtiMVA0NWFxMHRXWHNWUHU2TzZaOGVqc1pYMWg5ZjdVVlpkVzZoY09nODVFWXBDNXV1Q1Jpb3VDejdDSFA3c212NnZoNmJBVGVFaWJMRDNEcmE5L1BtalNBVDVtS2x5a2g0SkxzKzBpbUVLeTNuazI4QzU2MnRXY1B0bkVJZzNBPT0iLCJtYWMiOiI3MDIzNzBhYzVhNTZmZGQ3MTUzYzIxMzI2ODE0OWExY2ZhODM0M2IyM2E2YzQ5MjkxZDkxYWE1OThkZmI5YzVjIiwidGFnIjoiIn0%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787182906.4514,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "user-storage",
+          "value": "{\"state\":{\"user\":{\"id\":3,\"nama\":\"Dosen E2E\",\"role\":\"Dosen\",\"avatar\":\"http://localhost:8000/storage/avatars/default_3_74b3e80b.webp\"}},\"version\":0}"
+        }
+      ]
+    }
+  ]
+}

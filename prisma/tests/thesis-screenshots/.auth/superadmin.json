@@ -1,0 +1,45 @@
+{
+  "cookies": [
+    {
+      "name": "XSRF-TOKEN",
+      "value": "eyJpdiI6IlVMSEFwQ2tPUHdBc01VZUxGS3BrV2c9PSIsInZhbHVlIjoiVmR0dCtNVXJqNE1NYUhYYmdnMHBZWWt2YkN3b291ZU42dU5MY0NkVFZNUnA1WThRVkhoVDRsVERDc2hUamd0UTRMV0dhc2FZMk9hVHNZODJJVG9Wc1VYeEZIdnpxaExaY0Jvb2RvZk8xWmh0SlJsdlpTU2VUVS9lTlRpUUtiYngiLCJtYWMiOiIxZjQxZmI1ZjdmNmMyYmJjYjgzMTVkYTVjNjI4YWZiNjk3NDRiMTNmMjEwM2VmMTY1NWI2MWMyMzgzMzA0N2QxIiwidGFnIjoiIn0%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787090040.864092,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "laravel-session",
+      "value": "eyJpdiI6Ijc1N2E0ZlpmUGN3eE5peHJNd2U3QXc9PSIsInZhbHVlIjoiUWc1eWJpcFNLWmhSNlpkdHhWVjBUQUZ0VGsyekROL09Sa3llRHQwaWZ0Tm13Vm1CQWhaVlRKVzdaZ3dhdFJ6VTUwRVN1VVJqQys0SmJLZ2FzU1pHUVNBbGVHQTVEVy8zQU84VXRua0RCVnVCUlkzR09EaC9EQkRmYmx2QXNTMFoiLCJtYWMiOiI1ZTYyZjg1YTI0NTNiZDVkMmQwOTFlMGMxMGFkNGNhZGJkM2E1ZjRhMmNjODIyMTY0NTczMTIyMWQ5ZWE0MWUyIiwidGFnIjoiIn0%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787090040.864131,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "uDLrD7wIoaSIAyVf76uQJR2LrNx6J1DQa4OInjS8",
+      "value": "eyJpdiI6Inlta2x5S2tMMERQZ3l2dGljZ0dGcmc9PSIsInZhbHVlIjoiSTZEOTJmOWRnTVZnMjdham9HNE0vV0VUSU94SGhZVzRBeXoxWUlzblRvaGJyYkVScDZkR3ZkRExRcEZFM0Q1Zkh0ZXNzSnFYZVpzK000MFRVQXhOaUxHZFBvUFBVemd6TUNlYmFCV01CMUxlOFIwbHJHaXhKN1dsaVhCYnZjY1VteHFXY1Rac040ZURnQ3lManVUNjBpYUhyR2dBVVhyY1JtNjNsNWZsMVg1aTlUcXZ3a25tZXNxWVVjaFpqek9mNUVITG9mV3B6RVN4N2ozM0JtVUExT2FnUWFHQUNZcGlGL05RYjZUeVdHdEh6MTExMmpFSFl0WlBIZGpoNG1Xa2F5V2kzWGphSGVpbDlyN3JQOTdRRXNzZ3JiUUk2b25DSWZRMEloV201SHdlSXhKWktqM0tQM0N6NFhhT2Myd0RoWDZFcDFxM2d0bW1jWkVaaURWYXVIc1BzR2w4c3dKYlAyMDVNdEl5RXNSejlzRWxJUE1henlraUdwTVBxclhHdzhFUFdrVGJDc3JkQ2lQTTVtRGJ2OXhkdVlvL3dyZHpaelVHYXVuR2hqaWI3ZW9ZV0p2OWZxdzNZU055MGpSdTNZa0ZoUmZFWEFkdUNXc1V0ZitEVlk2SWtHWmxvcmUzR0xWUFpNR1VmbnBJN2NBTTdRYkdibC96Mk82eVJ5L0p1Mm1rTDRRc20wWFg0eFpPR0o5UXJBPT0iLCJtYWMiOiI4ODExOTQwNGJhNzAwZDY0MzVjYTYzNmQ1ZmFiM2RlODBmMzlmYzBhYjMxYTFhY2VmNzAzYjhmOWU5ZjQ1NzRhIiwidGFnIjoiIn0%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787090040.864153,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "user-storage",
+          "value": "{\"state\":{\"user\":{\"id\":1,\"nama\":\"Superadmin\",\"role\":\"Superadmin\",\"avatar\":\"http://localhost:8000/storage/avatars/default_1_dddcdaa8.webp\"}},\"version\":0}"
+        }
+      ]
+    }
+  ]
+}

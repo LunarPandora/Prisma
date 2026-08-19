@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Framework cache
+.next/
+.nuxt/
+dist/
+build/
+coverage/
+
+# Laravel
+storage/
+bootstrap/cache/
+public/build/
+public/hot
+
+# Vite
+.vite/
+
+# Git
+.git/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Locks
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+composer.lock
+
+# Generated
+*.min.js
+*.map

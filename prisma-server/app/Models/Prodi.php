@@ -14,5 +14,11 @@ class Prodi extends Model
 
     protected $fillable = [
         'nama_prodi',
+        'kaprodi_id',
     ];
+
+    public function kaprodi()
+    {
+        return $this->belongsTo(User::class, 'kaprodi_id', 'id');
+    }
 }

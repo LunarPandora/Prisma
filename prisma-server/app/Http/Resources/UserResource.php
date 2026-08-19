@@ -22,8 +22,11 @@ class UserResource extends JsonResource
             'status' => $this->status,
             'gender' => $this->gender,
             'created_at' => $this->created_at,
-            'prodi_id' => $this->dosen?->prodi_id,
-            'nidn' => $this->dosen?->nidn,
+            'prodi_id' => $this->prodi_id,
+            'nidn' => $this->nidn,
+            'nuptk' => $this->nuptk,
+            'no_hp' => $this->no_hp,
+            'avatar' => $this->avatar_url
         ];
     }
 }

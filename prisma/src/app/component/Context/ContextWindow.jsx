@@ -1,85 +1,84 @@
-"use client";
+"use client"
 
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { motion } from "framer-motion";
+import { useRef, useEffect, useCallback } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 
-export default function ContextWindow({ position, children, onClose }) {
-  const menuRef = useRef(null);
-  const [coords, setCoords] = useState({ left: 0, top: 0 });
-  let originX = "left";
-  let originY = "top";
+export default function ContextWindow({ position, onClose, children }) {
+    const menuRef = useRef(null)
 
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (!menuRef.current?.contains(e.target)) {
-        onClose();
-      }
-    };
+    const adjustPosition = useCallback(() => {
+        if (!menuRef.current) return
 
-    document.addEventListener("mousedown", handleClick);
-    document.addEventListener("touchstart", handleClick);
+        const menuRect = menuRef.current.getBoundingClientRect()
+        const { clientX: x, clientY: y } = position
+        const { innerWidth: vw, innerHeight: vh } = window
 
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("touchstart", handleClick);
-    };
-  }, [onClose]);
+        let left = x
+        let top = y
 
-  useEffect(() => {
-    if (!menuRef.current || !position) return;
+        if (x + menuRect.width > vw) left = vw - menuRect.width - 8
+        if (y + menuRect.height > vh) top = vh - menuRect.height - 8
+        if (left < 0) left = 8
+        if (top < 0) top = 8
 
-    const rect = menuRef.current.getBoundingClientRect();
-    const padding = 5;
+        menuRef.current.style.left = `${left}px`
+        menuRef.current.style.top = `${top}px`
+    }, [position])
 
-    let left = position.x;
-    let top = position.y;
+    useEffect(() => {
+        adjustPosition()
 
-    // 👉 Flip horizontally if overflow right
-    if (left + rect.width > window.innerWidth) {
-      left = position.x - rect.width;
-    }
+        const handleResize = () => adjustPosition()
+        window.addEventListener("resize", handleResize)
+        return () => window.removeEventListener("resize", handleResize)
+    }, [adjustPosition])
 
-    // 👉 Clamp to left edge
-    if (left < padding) {
-      left = padding;
-    }
+    useEffect(() => {
+        if (!menuRef.current) return
+        menuRef.current.focus()
+    }, [])
 
-    // 👉 Flip vertically if overflow bottom
-    if (top + rect.height > window.innerHeight) {
-      top = position.y - rect.height;
-    }
-
-    // 👉 Clamp to top edge
-    if (top < padding) {
-      top = padding;
-    }
-
-    if (left < position.x) originX = "right";
-    if (top < position.y) originY = "bottom";
-
-    setCoords({ left, top });
-  }, [position]);
-
-  if (!position) return null;
-
-  return createPortal(
-    <motion.div
-      ref={menuRef}
-      key="contextMenu"
-      initial={{ opacity: 0, scale: 0.95, y: -5 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95, y: -5 }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      className="fixed min-w-40 bg-white flex flex-col border-2 border-gray-200 drop-shadow-md rounded-md"
-      style={{
-        top: coords.top,
-        left: coords.left,
-        transformOrigin: `${originY} ${originX}`,
-      }}
-    >
-      {children}
-    </motion.div>,
-    document.body
-  );
+    return (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.1 }}
+                className="fixed inset-0 z-[9999]"
+                onClick={(e) => {
+                    if (e.target === e.currentTarget) onClose()
+                }}
+            >
+                <div
+                    ref={menuRef}
+                    tabIndex={-1}
+                    role="menu"
+                    aria-label="Context menu"
+                    className="
+                        absolute bg-white border border-gray-200 rounded-lg
+                        shadow-lg overflow-hidden
+                        min-w-[180px] max-h-[320px] overflow-y-auto
+                        outline-none
+                    "
+                    style={{
+                        left: position.clientX,
+                        top: position.clientY,
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === "Escape") {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            onClose()
+                        }
+                    }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) onClose()
+                    }}
+                >
+                    {children}
+                </div>
+            </motion.div>
+        </AnimatePresence>
+    )
 }

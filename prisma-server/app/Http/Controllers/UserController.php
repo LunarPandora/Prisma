@@ -6,133 +6,175 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 use App\Models\User;
-use App\Models\Dosen;
-use App\Models\Reviewer;
 
 use App\Http\Resources\UserResource;
 use App\Helpers\ApiResponse;
+
+use App\Services\AvatarService;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class UserController extends Controller
 {
     public function index()
     {
         return UserResource::collection(
-            User::with(['dosen' => function($q) {
-                    $q->withTrashed()->select('dosen_id','user_id','prodi_id','nidn');
-                }])
-                ->orderBy('id')
-                ->paginate(10, ['id', 'nama', 'email', 'role', 'status', 'gender', 'created_at'])
+            User::orderBy('id')
+                ->paginate(10, [
+                    'id',
+                    'nama',
+                    'email',
+                    'role',
+                    'status',
+                    'gender',
+                    'avatar',
+                    'nidn',
+                    'nuptk',
+                    'no_hp',
+                    'prodi_id',
+                    'created_at'
+                ])
         );
     }
 
-    public function create(Request $request)
+    public function fetch(){
+        return UserResource::collection(
+            User::orderBy('id')->get()
+        );
+    }
+
+    public function create(Request $request, AvatarService $avatarService)
     {
-        try {
-            $user = User::create([
-                'nama'     => $request->nama,
-                'email'    => $request->email,
-                'password' => Hash::make($request->password),
-                'role'     => $request->role,
-                'status'   => $request->status,
-                'gender'   => $request->gender,
-            ]);
+        $validRoles = ['Superadmin', 'Staff LPPM', 'Ketua LPPM', 'Dosen', 'Reviewer'];
+        $validStatuses = ['Aktif', 'Nonaktif'];
 
-            if ($user->role === 'Dosen') {
-                Dosen::create([
-                    'user_id'  => $user->id,
-                    'nidn'     => $request->nidn,
-                    'prodi_id' => $request->prodi_id,
-                ]);
-            }
-            elseif ($user->role === 'Reviewer') {
-                Reviewer::create([
-                    'user_id'   => $user->id,
-                    'nidn'      => $request->nidn
-                ]);
-            }
+        $validated = $request->validate([
+            'nama'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'role'     => ['required', 'in:' . implode(',', $validRoles)],
+            'status'   => ['required', 'in:' . implode(',', $validStatuses)],
+            'nidn'     => ['nullable', 'string', 'max:50', 'unique:users,nidn'],
+            'nuptk'    => ['nullable', 'string', 'max:50', 'unique:users,nuptk'],
+            'no_hp'    => ['nullable', 'string', 'max:20'],
+            'prodi_id' => ['nullable', 'integer'],
+            'uploaded_file' => [
+                'sometimes',
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+            ],
+        ]);
 
-            return ApiResponse::success();
-        } catch (\Exception $e) {
-            \Log::error('Create failed: ' . $e->getMessage());
-            return ApiResponse::failed();
+        if (empty($request->nidn) && empty($request->nuptk)) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => [
+                    'nidn' => ['NIDN atau NUPTK wajib diisi salah satu.'],
+                ],
+            ], 422);
         }
+
+        $user = User::create([
+            'nama'     => $validated['nama'],
+            'email'    => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role'     => $validated['role'],
+            'status'   => $validated['status'],
+            'gender'   => $request->gender,
+            'nidn'     => $request->nidn,
+            'nuptk'    => $request->nuptk,
+            'no_hp'    => $request->no_hp,
+            'prodi_id' => $request->prodi_id,
+            'avatar'   => null,
+        ]);
+
+        $user->update([
+            'avatar' => $avatarService->ensureDefault(
+                $user->nama,
+                $user->id,
+                $request->hasFile('uploaded_file')
+                    ? $request->file('uploaded_file')
+                    : null
+            ),
+        ]);
+
+        return ApiResponse::success();
     }
 
-    public function update(Request $request){
+    public function update(Request $request, AvatarService $avatarService){
+        $validRoles = ['Superadmin', 'Staff LPPM', 'Ketua LPPM', 'Dosen', 'Reviewer'];
+        $validStatuses = ['Aktif', 'Nonaktif'];
+
+        $userId = $request->id;
+
+        $validated = $request->validate([
+            'nama'  => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'email', 'max:255', 'unique:users,email,' . $userId],
+            'role'  => ['sometimes', 'in:' . implode(',', $validRoles)],
+            'status' => ['sometimes', 'in:' . implode(',', $validStatuses)],
+            'nidn'  => ['nullable', 'string', 'max:50', 'unique:users,nidn,' . $userId],
+            'nuptk' => ['nullable', 'string', 'max:50', 'unique:users,nuptk,' . $userId],
+            'no_hp' => ['nullable', 'string', 'max:20'],
+            'prodi_id' => ['nullable', 'integer'],
+            'uploaded_file' => [
+                'sometimes',
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+            ],
+        ]);
+
+        if (empty($request->nidn) && empty($request->nuptk)) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => [
+                    'nidn' => ['NIDN atau NUPTK wajib diisi salah satu.'],
+                ],
+            ], 422);
+        }
+
+        $user = User::findOrFail($userId);
+
+        if ($request->hasFile('uploaded_file')) {
+            $avatarUrl = $avatarService->replace(
+                $user->avatar,
+                $request->file('uploaded_file')
+            );
+        } else {
+            $avatarUrl = $avatarService->refreshDefaultOnRename(
+                $user->avatar,
+                $request->nama,
+                $user->id
+            );
+        }
+
+        $user->update([
+            'nama'     => $request->nama,
+            'email'    => $request->email,
+            'role'     => $request->role,
+            'status'   => $request->status,
+            'gender'   => $request->gender,
+            'nidn'     => $request->nidn,
+            'nuptk'    => $request->nuptk,
+            'no_hp'    => $request->no_hp,
+            'prodi_id' => $request->prodi_id,
+            'avatar'   => $avatarUrl
+        ]);
+
+        return ApiResponse::success();
+    }
+
+    public function delete(Request $request, AvatarService $avatarService){
         try {
             $user = User::findOrFail($request->id);
 
-            // Update user
-            $user->update([
-                'nama'   => $request->nama,
-                'email'  => $request->email,
-                'role'   => $request->role,
-                'status' => $request->status,
-                'gender' => $request->gender,
-            ]);
-
-            // Handle Dosen role
-            if ($user->role === 'Dosen') {
-                $dosen = Dosen::withTrashed()->firstOrNew(['user_id' => $user->id]);
-
-                // Restore if soft deleted
-                if ($dosen->exists && $dosen->trashed() && $request->status == "Aktif") {
-                    $dosen->restore();
-                }
-
-                // Update Dosen fields
-                $dosen->nidn = $request->nidn;
-                $dosen->prodi_id = $request->prodi_id;
-
-                $dosen->save(); // create or update
-            }
-            elseif ($user->role === 'Reviewer'){
-                $reviewer = Dosen::withTrashed()->firstOrNew(['user_id' => $user->id]);
-
-                // Restore if soft deleted
-                if ($reviewer->exists && $reviewer->trashed() && $request->status == "Aktif") {
-                    $reviewer->restore();
-                }
-
-                // Update Reviewer fields
-                $reviewer->nidn = $request->nidn;
-
-                $reviewer->save();
-            }
-
-            return ApiResponse::success();
-        } catch (\Exception $e) {
-            \Log::error('Update failed: '.$e->getMessage());
-
-            return ApiResponse::failed();
-        }
-    }
-
-    public function delete(Request $request){
-        try {
-            $user = User::findOrFail($request->id);
             $user->status = 'Nonaktif'; // disable the user
-
-            if ($user->role === 'Dosen') {
-                // Get the Dosen, including soft-deleted
-                $dosen = Dosen::withTrashed()->firstOrNew(['user_id' => $user->id]);
-
-                // Only delete if not already soft-deleted
-                if (!$dosen->trashed() && $dosen->exists) {
-                    $dosen->delete();
-                }
-            }
-            elseif ($user->role === 'Reviewer') {
-                // Get the Reviewer, including soft-deleted
-                $reviewer = Reviewer::withTrashed()->firstOrNew(['user_id' => $user->id]);
-
-                // Only delete if not already soft-deleted
-                if (!$reviewer->trashed() && $reviewer->exists) {
-                    $reviewer->delete();
-                }
-            }
-
             $user->save(); // save status change
+
+            $avatarService->delete($user->avatar);
             $user->delete();
 
             return ApiResponse::success();

@@ -13,13 +13,34 @@ return new class extends Migration
     {
         Schema::create('periode_pengajuan', function (Blueprint $table) {
             $table->bigIncrements('periode_id');
-            $table->foreignId('skema_id')->constrained('skema', 'skema_id');
+
+            $table->foreignId('skema_id')
+                ->constrained('skema', 'skema_id')
+                ->cascadeOnDelete();
+
+            $table->enum('jenis_penelitian', [
+                'Penelitian',
+                'PkM'
+            ]);
+
+            $table->string('kode_periode');
             $table->string('nama_periode');
-            $table->date('tgl_mulai');
-            $table->date('tgl_selesai');
-            $table->enum('status', ['Belum dibuka', 'Terbuka', 'Selesai']);
+            $table->date('tgl_mulai')->nullable();
+            $table->date('tgl_selesai')->nullable();
+            $table->enum('status', [
+                'Belum dibuka',
+                'Terbuka',
+                'Selesai'
+            ])->default('Belum dibuka');
+
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unique([
+                'skema_id',
+                'jenis_penelitian',
+                'kode_periode'
+            ]);
         });
     }
 

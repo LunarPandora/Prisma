@@ -1,0 +1,621 @@
+// PRISMA Complete ERD - DBML Format
+// Generated: Agustus 2026
+// Sources: 86 migrations, 31 Eloquent models, live MariaDB schema inspection
+// 31 tables (30 application + 1 framework), 37 unique logical FKs (39 constraints), 3 polymorphic relationships
+
+Project 'PRISMA' {
+  database_type: 'MariaDB'
+  note: 'Sistem Informasi Penelitian dan Pengabdian kepada Masyarakat - LPPM'
+}
+
+// ========================================
+// DOMAIN 1: User & Access
+// ========================================
+
+Table users {
+  id bigint unsigned [pk, increment]
+  nama varchar(255) [not null]
+  email varchar(255) [not null, unique]
+  email_verified_at timestamp [null]
+  password varchar(255) [not null, note: 'Hidden in API']
+  role enum('Superadmin','Staff LPPM','Ketua LPPM','Dosen','Reviewer','Rektorat') [not null]
+  gender enum('L','P') [not null]
+  status enum('Aktif','Nonaktif') [not null]
+  nidn varchar(255) [null]
+  nuptk varchar(255) [null]
+  no_hp varchar(255) [null]
+  prodi_id bigint unsigned [null]
+  avatar text [null]
+  remember_token varchar(100) [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+
+  Note: 'Central user table. Roles: Superadmin, Staff LPPM, Ketua LPPM, Dosen, Reviewer, Rektorat'
+}
+
+Table prodi {
+  prodi_id bigint unsigned [pk, increment]
+  nama_prodi varchar(255) [not null]
+  kaprodi_id bigint unsigned [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+}
+
+Table settings {
+  id bigint unsigned [pk, increment]
+  kepala_lppm bigint unsigned [null]
+  rektor bigint unsigned [null]
+  rektor_nama varchar(255) [null]
+  rektor_nidn varchar(255) [null]
+  rektor_nuptk varchar(255) [null]
+  nama_kampus varchar(255) [not null, default: '-']
+  kriteria_penilaian json [null]
+  list_kesesuaian_tema json [null]
+  ignore_kegiatan_dates tinyint(1) [not null, default: 0]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  Note: 'System-wide configuration. Singleton pattern.'
+}
+
+Table notifications {
+  notification_id bigint unsigned [pk, increment]
+  user_id bigint unsigned [not null]
+  type varchar(100) [not null]
+  title varchar(255) [not null]
+  message text [not null]
+  data json [null]
+  action_url varchar(500) [null]
+  key varchar(255) [null, unique]
+  read_at timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+// ========================================
+// DOMAIN 2: Proposal Management
+// ========================================
+
+Table skema {
+  skema_id bigint unsigned [pk, increment]
+  nama_skema varchar(255) [not null]
+  tahun_ajaran varchar(255) [not null]
+  status enum('Draft','Aktif','Selesai') [not null, default: 'Draft']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+
+  Note: 'Research/PkM schema (e.g., "Internal 2026", "Eksternal 2026")'
+}
+
+Table kegiatan_pengajuan {
+  kegiatan_id bigint unsigned [pk, increment]
+  skema_id bigint unsigned [not null]
+  jenis_penelitian enum('Penelitian','PkM') [not null]
+  kode_kegiatan varchar(255) [not null]
+  nama_kegiatan varchar(255) [not null]
+  tgl_mulai date [null]
+  tgl_selesai date [null]
+  status enum('Belum dibuka','Terbuka','Selesai') [not null, default: 'Belum dibuka']
+  manual_status_override tinyint(1) [not null, default: 0]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+
+  Note: 'Activity period under a schema. Originally named periode_pengajuan.'
+}
+
+Table proposal {
+  proposal_id bigint unsigned [pk, increment]
+  jenis_penelitian enum('Penelitian','PkM') [not null]
+  jenis_penelitian_gan enum('Penelitian','PkM') [not null]
+  jenis_penelitian_gen enum('Penelitian','PkM') [not null]
+  judul varchar(255) [null]
+  tahap_penelitian enum('Proposal','Laporan') [not null, default: 'Proposal']
+  topik_penelitian varchar(255) [not null]
+  bidang_ilmu varchar(255) [not null]
+  fokus_sdg varchar(255) [not null]
+  ra_biaya_penelitian_gan double [null]
+  ra_biaya_publikasi_gan double [null]
+  ra_insentif_gan double [null]
+  ra_biaya_penelitian_gen double [null]
+  ra_biaya_publikasi_gen double [null]
+  ra_insentif_gen double [null]
+  target_publikasi_gan varchar(255) [not null]
+  target_publikasi_gen varchar(255) [not null]
+  rencana_judul_publikasi_gan text [not null]
+  rencana_judul_publikasi_gen text [not null]
+  metopen_gan text [not null]
+  metopen_gen text [not null]
+  unit_analisis_gan text [not null]
+  unit_analisis_gen text [not null]
+  kontribusi_ilmu_makul text [not null]
+  kontribusi_pkm text [not null]
+  rencana_luaran text [not null]
+  institusi_mitra varchar(255) [not null, default: '-']
+  user_id bigint unsigned [not null]
+  kegiatan_id bigint unsigned [not null]
+  skema enum('Internal','Eksternal','Mandiri') [not null]
+  sumber_skema varchar(255) [not null]
+  status enum('Draft','Ditarik','Ditolak','Menunggu proposal untuk diupload','Menunggu review dari Ketua LPPM','Menunggu review Staff LPPM','Menunggu penugasan reviewer','Menunggu review','Menunggu persetujuan Ketua LPPM','Proposal Diterima','Dalam pengerjaan','Revisi') [not null, default: 'Draft']
+  ketua_seleksi_approved tinyint(1) [not null, default: 0]
+  staff_seleksi_approved tinyint(1) [not null, default: 0]
+  tgl_pengajuan date [null]
+  catatan text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+
+  Note: 'Research proposal. 12-value status workflow from Draft to Dalam pengerjaan.'
+}
+
+Table proposal_member {
+  prop_member_id bigint unsigned [pk, increment]
+  proposal_id bigint unsigned [not null]
+  member_id bigint unsigned [not null]
+  role enum('Dosen','Mahasiswa','Kolaborator') [not null]
+  semester enum('Ganjil','Genap') [not null]
+  ttjp text [not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  Note: 'Polymorphic member via role: Dosen->users.id, Mahasiswa->mhswa_id, Kolaborator->kolab_id'
+}
+
+// ========================================
+// DOMAIN 3: Laporan Management
+// ========================================
+
+Table laporan {
+  laporan_id bigint unsigned [pk, increment]
+  proposal_id bigint unsigned [not null]
+  kegiatan_id bigint unsigned [null]
+  semester enum('Ganjil','Genap') [not null]
+  jenis_penelitian enum('Penelitian','PkM') [not null]
+  judul_penelitian varchar(255) [not null]
+  metode_penelitian text [null]
+  unit_analisis text [null]
+  link_luaran_drive_id text [null]
+  link_luaran_drive_url text [null]
+  target_publikasi varchar(255) [null]
+  nama_jurnal varchar(255) [null]
+  link_jurnal varchar(255) [null]
+  link_publikasi text [null]
+  link_laporan_akhir text [null]
+  link_hki text [null]
+  link_buku text [null]
+  link_poster text [null]
+  link_video text [null]
+  dana_dikembalikan tinyint(1) [not null, default: 0]
+  dana_disetajui tinyint(1) [not null, default: 0]
+  dana_disetajui_by bigint unsigned [null]
+  dana_disetajui_at timestamp [null]
+  claim_dana_status varchar(255) [null]
+  institusi_mitra varchar(255) [null]
+  realisasi_biaya_penelitian double [not null, default: 0]
+  realisasi_biaya_publikasi double [not null, default: 0]
+  realisasi_insentif double [not null, default: 0]
+  status enum('Belum dimulai','Dalam pengerjaan','Menunggu kelengkapan data','Menunggu review Admin','Menunggu review Staff LPPM','Menunggu review','Menunggu hasil dari Reviewers','Menuggu penugasan Reviewer','Menunggu keputusan Ketua','Menunggu Persetujuan Ketua LPPM','Menunggu konfirmasi pengiriman dana','Menunggu konfirmasi penerimaan dana','Revisi','Selesai') [null, default: 'Dalam pengerjaan']
+  ketua_diseminasi_approved tinyint(1) [not null, default: 0]
+  staff_diseminasi_approved tinyint(1) [not null, default: 0]
+  tgl_mulai date [null]
+  tgl_submit date [null]
+  tgl_selesai date [null]
+  completed_at timestamp [null]
+  current_logbook_id bigint unsigned [null]
+  catatan text [null]
+  hasil_pelaksanaan text [null]
+  status_luaran text [null]
+  peran_mitra text [null]
+  kendala_pelaksanaan text [null]
+  rencana_tahapan_selanjutnya text [null]
+  daftar_pustaka text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+  claim_dana_approved_at timestamp [null]
+  claim_dana_confirmed_at timestamp [null]
+  pengembalian_dana_status varchar(255) [null]
+  pengembalian_dana_confirmed_at timestamp [null]
+  pengembalian_dana_skipped_reason varchar(255) [null]
+
+  Note: 'Activity report. 14-value status workflow. Pengembalian Dana fields added for Phase 5.'
+}
+
+Table laporan_member {
+  laporan_member_id bigint unsigned [pk, increment]
+  laporan_id bigint unsigned [not null]
+  member_id bigint unsigned [not null]
+  role enum('Dosen','Mahasiswa','Kolaborator') [not null]
+  position int [not null, default: 0]
+  ttjp text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  Note: 'Polymorphic member via role: Dosen->users.id, Mahasiswa->mhswa_id, Kolaborator->kolab_id'
+}
+
+Table logbook_pengerjaan {
+  logbook_id bigint unsigned [pk, increment]
+  laporan_id bigint unsigned [not null]
+  user_id bigint unsigned [not null]
+  judul varchar(255) [not null]
+  deskripsi text [not null]
+  tgl_kegiatan date [not null]
+  lampiran_drive_id text [null]
+  lampiran_drive_url text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table realisasi_anggaran {
+  id bigint unsigned [pk, increment]
+  laporan_id bigint unsigned [not null]
+  item_kebutuhan varchar(255) [not null]
+  satuan varchar(255) [not null]
+  jumlah_item int [not null]
+  harga_satuan decimal(15,2) [not null]
+  total decimal(15,2) [not null, note: 'Auto-computed: jumlah_item * harga_satuan']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table sitasi {
+  sitasi_id bigint unsigned [pk, increment]
+  laporan_id bigint unsigned [not null]
+  judul_sitasi varchar(255) [not null]
+  sumber varchar(255) [null]
+  tahun year [null]
+  url text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+}
+
+// ========================================
+// DOMAIN 4: Document Management (Polymorphic)
+// ========================================
+
+Table dokumen {
+  dokumen_id bigint unsigned [pk, increment]
+  documentable_id bigint unsigned [not null]
+  documentable_type varchar(255) [not null]
+  jenis_dokumen varchar(255) [not null]
+  current_version_id bigint unsigned [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+
+  Note: 'Polymorphic: owned by Proposal, KegiatanPengajuan, or Laporan'
+}
+
+Table dokumen_version {
+  version_id bigint unsigned [pk, increment]
+  dokumen_id bigint unsigned [not null]
+  uploaded_by bigint unsigned [not null]
+  version int [not null]
+  nama_file varchar(255) [not null]
+  local_file_url text [not null]
+  drive_file_id text [not null]
+  drive_file_url text [not null]
+  catatan_revisi text [null]
+  tgl_upload datetime [not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+}
+
+// ========================================
+// DOMAIN 5: Review Management (Polymorphic)
+// ========================================
+
+Table penugasan_reviewer {
+  penugasan_id bigint unsigned [pk, increment]
+  reviewable_type varchar(255) [not null, default: 'App\\Models\\Proposal']
+  reviewable_id bigint unsigned [null]
+  proposal_id bigint unsigned [null]
+  tgl_penugasan date [not null]
+  user_id bigint unsigned [not null]
+  status_review enum('Belum direview','Telah direview') [not null, default: 'Belum direview']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+
+  Note: 'Polymorphic: reviewable points to Proposal or Laporan. proposal_id is legacy direct link.'
+}
+
+Table review {
+  review_id bigint unsigned [pk, increment]
+  penugasan_id bigint unsigned [not null]
+  keputusan enum('Diterima','Diterima dengan perbaikan','Ditolak') [not null]
+  kriteria_kesesuaian_tema json [null]
+  kriteria_penilaian json [null]
+  catatan text [not null]
+  tgl_review date [not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+}
+
+// ========================================
+// DOMAIN 6: Academic Master Data
+// ========================================
+
+Table mahasiswa {
+  mhswa_id bigint unsigned [pk, increment]
+  nim int unsigned [not null]
+  nama varchar(255) [not null]
+  email varchar(255) [null]
+  no_hp varchar(255) [null]
+  prodi_id bigint unsigned [not null]
+  avatar text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+}
+
+Table kolaborator {
+  kolab_id bigint unsigned [pk, increment]
+  nidn int unsigned [null]
+  nuptk int unsigned [null]
+  email varchar(255) [not null]
+  no_hp varchar(255) [not null]
+  nama varchar(255) [not null]
+  prodi varchar(255) [not null]
+  institusi varchar(255) [not null]
+  avatar text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null, note: 'SoftDeletes']
+}
+
+// ========================================
+// DOMAIN 7: Researcher Profile
+// ========================================
+
+Table peneliti_details {
+  id bigint unsigned [pk, increment]
+  user_id bigint unsigned [null, unique]
+  kolab_id bigint unsigned [null, unique]
+  jabatan varchar(255) [null]
+  pangkat_golongan varchar(255) [null]
+  no_hp varchar(255) [null]
+  sinta_id varchar(255) [null]
+  scopus_id varchar(255) [null]
+  google_scholar_id varchar(255) [null]
+  h_index decimal(5,2) [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  Note: 'Either user_id or kolab_id is set (mutually exclusive). Links Dosen or Kolaborator to research outputs.'
+}
+
+Table publications {
+  id bigint unsigned [pk, increment]
+  peneliti_detail_id bigint unsigned [not null]
+  jenis_jurnal varchar(255) [null]
+  judul varchar(255) [not null]
+  peran enum('first_author','corresponding_author','co_author') [not null]
+  nama_jurnal varchar(255) [not null]
+  tahun year [not null]
+  volume varchar(255) [null]
+  issn varchar(255) [null]
+  doi varchar(255) [null]
+  url text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  pub_category_id bigint unsigned [null]
+  peringkat varchar(255) [null]
+}
+
+Table publication_categories {
+  pub_category_id bigint unsigned [pk, increment]
+  nama varchar(255) [not null]
+  peringkat json [null]
+  urutan int unsigned [not null, default: 0]
+  is_active tinyint(1) [not null, default: 1]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table books {
+  id bigint unsigned [pk, increment]
+  peneliti_detail_id bigint unsigned [not null]
+  judul varchar(255) [not null]
+  tahun year [not null]
+  isbn varchar(255) [null]
+  penerbit varchar(255) [null]
+  url text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table hkis {
+  id bigint unsigned [pk, increment]
+  peneliti_detail_id bigint unsigned [not null]
+  judul varchar(255) [not null]
+  tahun year [not null]
+  jenis varchar(255) [null]
+  nomor varchar(255) [null]
+  status enum('terdaftar','granted') [not null]
+  url text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table research_histories {
+  id bigint unsigned [pk, increment]
+  peneliti_detail_id bigint unsigned [not null]
+  kategori enum('kemdikbud','internal') [not null]
+  judul varchar(255) [not null]
+  tahun year [not null]
+  dana_disetujui decimal(18,2) [not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+// ========================================
+// DOMAIN 8: Google Scholar Integration
+// ========================================
+
+Table scholar_profiles {
+  scholar_profile_id bigint unsigned [pk, increment]
+  user_id bigint unsigned [not null, unique]
+  scholar_author_id varchar(255) [not null, unique]
+  profile_url varchar(255) [not null]
+  display_name varchar(255) [null]
+  affiliation varchar(255) [null]
+  total_citations int unsigned [not null, default: 0]
+  h_index int unsigned [not null, default: 0]
+  i10_index int unsigned [not null, default: 0]
+  sync_status enum('pending','syncing','success','failed') [not null, default: 'pending']
+  last_synced_at timestamp [null]
+  last_sync_error text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table scholar_publications {
+  publication_id bigint unsigned [pk, increment]
+  scholar_profile_id bigint unsigned [not null]
+  external_id varchar(255) [null]
+  title varchar(255) [not null]
+  authors text [null]
+  publication_name varchar(255) [null]
+  publication_year smallint unsigned [null]
+  citation_count int unsigned [not null, default: 0]
+  publication_url varchar(255) [null]
+  last_synced_at timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table scholar_citations_by_year {
+  citation_id bigint unsigned [pk, increment]
+  scholar_profile_id bigint unsigned [not null]
+  year smallint unsigned [not null]
+  citation_count int unsigned [not null, default: 0]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  Note: 'UNIQUE(scholar_profile_id, year)'
+}
+
+Table scholar_publication_citations_by_year {
+  publication_citation_id bigint unsigned [pk, increment]
+  scholar_publication_id bigint unsigned [not null]
+  year smallint unsigned [not null]
+  citation_count int unsigned [not null, default: 0]
+  last_synced_at timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  Note: 'UNIQUE(scholar_publication_id, year). No FK constraint in DB (implied reference).'
+}
+
+// ========================================
+// DOMAIN 9: Workflow Authorization
+// ========================================
+
+Table kegiatan_edit_requests {
+  id bigint unsigned [pk, increment]
+  kegiatan_id bigint unsigned [not null]
+  requested_by bigint unsigned [not null]
+  current_tgl_mulai date [not null]
+  current_tgl_selesai date [not null]
+  proposed_tgl_mulai date [not null]
+  proposed_tgl_selesai date [not null]
+  reason text [not null]
+  status enum('Menunggu Otorisasi','Disetujui','Ditolak') [not null, default: 'Menunggu Otorisasi']
+  reviewed_by bigint unsigned [null]
+  reviewed_at timestamp [null]
+  review_note text [null]
+  executed_by bigint unsigned [null]
+  executed_at timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table authorization_requests {
+  id bigint unsigned [pk, increment]
+  requestable_type varchar(255) [not null]
+  requestable_id bigint unsigned [not null]
+  requested_by bigint unsigned [not null]
+  action varchar(255) [not null]
+  source_stage varchar(255) [null]
+  target_stage varchar(255) [null]
+  reason text [not null]
+  current_data json [null]
+  proposed_data json [null]
+  status enum('Menunggu Persetujuan','Disetujui','Ditolak') [not null, default: 'Menunggu Persetujuan']
+  reviewed_by bigint unsigned [null]
+  reviewed_at timestamp [null]
+  review_note text [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  Note: 'Polymorphic: requestable points to Proposal or Laporan'
+}
+
+// ========================================
+// RELATIONSHIPS
+// ========================================
+
+// --- User & Access ---
+Ref: users.prodi_id > prodi.prodi_id
+Ref: prodi.kaprodi_id > users.id
+Ref: settings.kepala_lppm > users.id
+Ref: settings.rektor > users.id
+Ref: notifications.user_id > users.id [delete: cascade]
+
+// --- Proposal Management ---
+Ref: kegiatan_pengajuan.skema_id > skema.skema_id [delete: cascade]
+Ref: proposal.user_id > users.id
+Ref: proposal.kegiatan_id > kegiatan_pengajuan.kegiatan_id [delete: cascade]
+Ref: proposal_member.proposal_id > proposal.proposal_id
+
+// --- Laporan Management ---
+Ref: laporan.proposal_id > proposal.proposal_id
+Ref: laporan.kegiatan_id > kegiatan_pengajuan.kegiatan_id [delete: cascade]
+Ref: laporan.current_logbook_id > logbook_pengerjaan.logbook_id
+Ref: laporan_member.laporan_id > laporan.laporan_id [delete: cascade]
+Ref: logbook_pengerjaan.laporan_id > laporan.laporan_id
+Ref: logbook_pengerjaan.user_id > users.id
+Ref: realisasi_anggaran.laporan_id > laporan.laporan_id [delete: cascade]
+Ref: sitasi.laporan_id > laporan.laporan_id [delete: cascade]
+
+// --- Document Management ---
+Ref: dokumen_version.dokumen_id > dokumen.dokumen_id
+
+// --- Review Management ---
+Ref: penugasan_reviewer.proposal_id > proposal.proposal_id [delete: null]
+Ref: penugasan_reviewer.user_id > users.id
+Ref: review.penugasan_id > penugasan_reviewer.penugasan_id
+
+// --- Academic Master Data ---
+Ref: mahasiswa.prodi_id > prodi.prodi_id
+
+// --- Researcher Profile ---
+Ref: peneliti_details.user_id > users.id [delete: cascade]
+Ref: peneliti_details.kolab_id > kolaborator.kolab_id [delete: cascade]
+Ref: publications.peneliti_detail_id > peneliti_details.id [delete: cascade]
+Ref: publications.pub_category_id > publication_categories.pub_category_id [delete: null]
+Ref: books.peneliti_detail_id > peneliti_details.id [delete: cascade]
+Ref: hkis.peneliti_detail_id > peneliti_details.id [delete: cascade]
+Ref: research_histories.peneliti_detail_id > peneliti_details.id [delete: cascade]
+
+// --- Google Scholar ---
+Ref: scholar_profiles.user_id > users.id [delete: cascade]
+Ref: scholar_citations_by_year.scholar_profile_id > scholar_profiles.scholar_profile_id [delete: cascade]
+Ref: scholar_publications.scholar_profile_id > scholar_profiles.scholar_profile_id [delete: cascade]
+Ref: scholar_publication_citations_by_year.scholar_publication_id > scholar_publications.publication_id [delete: cascade]
+
+// --- Workflow Authorization ---
+Ref: kegiatan_edit_requests.kegiatan_id > kegiatan_pengajuan.kegiatan_id [delete: cascade]
+Ref: kegiatan_edit_requests.requested_by > users.id [delete: cascade]
+Ref: kegiatan_edit_requests.reviewed_by > users.id [delete: null]
+Ref: kegiatan_edit_requests.executed_by > users.id [delete: null]
+Ref: authorization_requests.requested_by > users.id [delete: cascade]
+Ref: authorization_requests.reviewed_by > users.id [delete: null]

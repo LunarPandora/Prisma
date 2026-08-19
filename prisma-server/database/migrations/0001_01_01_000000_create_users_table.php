@@ -17,9 +17,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['Admin', 'Kepala LPPM', 'Rektorat', 'Dosen', 'Reviewer']);
+            $table->enum('role', ['Admin', 'Tim LPPM', 'Rektorat', 'Dosen', 'Reviewer']);
             $table->enum('gender', ['L', 'P']);
             $table->enum('status', ['Aktif', 'Nonaktif']);
+            $table->string('nidn')->nullable();
+            $table->unsignedBigInteger('prodi_id')->nullable();
+            $table->text('avatar')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

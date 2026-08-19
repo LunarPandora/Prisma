@@ -12,8 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('dokumen', function (Blueprint $table) {
-            $table->id();
+            $table->id('dokumen_id');
+            $table->foreignId('proposal_id')->constrained('proposal', 'proposal_id');
+            $table->string('jenis_dokumen');
+
+            $table->string('nama_file');
+            $table->text('drive_file_id');
+            $table->text('drive_file_url');
+            $table->text('local_file_url');
+            $table->dateTime('tgl_upload');
+            
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

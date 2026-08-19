@@ -8,13 +8,22 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Skema extends Model
 {
     use SoftDeletes;
-    
-    protected $primaryKey = "skema_id";
-    protected $table = "skema";
+
+    protected $table = 'skema';
+    protected $primaryKey = 'skema_id';
 
     protected $fillable = [
         'nama_skema',
-        'jenis',
-        'keterangan'
+        'tahun_ajaran',
+        'status',
     ];
+
+    public function kegiatan()
+    {
+        return $this->hasMany(
+            KegiatanPengajuan::class,
+            'skema_id',
+            'skema_id'
+        );
+    }
 }

@@ -1,49 +1,77 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { AnimatePresence, motion } from "framer-motion"
+import { useState, useEffect, useMemo, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { AnimatePresence } from "framer-motion"
 
-import Alert from "../component/Alert"
-import Navbar from "../component/Navbar"
+import Alert from "../component/Alert/Alert"
+import Navbar from "../component/Panel/Navbar"
 import { useUserStore } from "../stores/useUserStore"
 import { useLoaderStore } from "../stores/useLoaderStore"
-import { dashboardModules } from "../lib/menu"
+import { dashboardModules } from "../component/Libraries/utils/menu"
 
-export default function Dashboard(){    
+function DashboardContent(){    
     const user = useUserStore(state => state.user)
+    const searchParams = useSearchParams()
 
     const start = useLoaderStore(state => state.start)
     const setProgress = useLoaderStore(state => state.setProgress)
     const finish = useLoaderStore(state => state.finish)
 
-    const allowedModules = user
-        ? dashboardModules.filter(module =>
-            module.roles.some(role => role.name === user.role)
+    const allowedModules = useMemo(() => user
+        ? dashboardModules.filter(m =>
+            !m.hidden && m.roles.some(role => role.name === user.role)
         )
-        : []
+        : [],
+    [user])
+
+    const allModulesForUser = useMemo(() => user
+        ? dashboardModules.filter(m =>
+            m.roles.some(role => role.name === user.role)
+        )
+        : [],
+    [user])
 
     const [active, setActive] = useState(null)
+    const [sidebarExpanded, setSidebarExpanded] = useState(false)
     const [logoutAlert, setLogoutAlert] = useState(null)
     const router = useRouter()
 
+    const handleSetActive = (key) => {
+        setActive(key)
+        const url = key === allowedModules[0]?.key
+            ? "/dashboard"
+            : `/dashboard?module=${key}`
+        window.history.replaceState(null, "", url)
+    }
+
     useEffect(() => {
-        if (allowedModules.length > 0 && !active) {
-            setActive(allowedModules[0].key)
+        if (allModulesForUser.length === 0) return
+
+        const moduleParam = searchParams.get("module")
+        if (moduleParam && allModulesForUser.some(m => m.key === moduleParam)) {
+            if (active !== moduleParam) setActive(moduleParam)
+        } else {
+            const firstKey = allowedModules[0]?.key
+            if (firstKey && active !== firstKey) setActive(firstKey)
         }
-    }, [allowedModules])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams])
 
     const activeModule =
-        allowedModules.find(m => m.key === active) || allowedModules[0]
+        allModulesForUser.find(m => m.key === active) || allowedModules[0]
 
     const ActiveComponent = activeModule?.component
 
-    if (allowedModules.length === 0) {
-        return router.push("/login")
-    }
-
     async function logout() {
         const store = useUserStore.getState()
+
+        try {
+            const { web } = await import("../component/Libraries/utils/api")
+            await web.post("/logout")
+        } catch (err) {
+            // Ignore logout API errors, proceed with local cleanup
+        }
 
         store.logout()
         useUserStore.persist.clearStorage()
@@ -63,40 +91,60 @@ export default function Dashboard(){
         finish()
     }
 
+    if (allowedModules.length === 0) {
+        return (
+            <main className="relative flex bg-background min-h-screen items-center justify-center">
+                <div className="text-center">
+                    <p className="text-xl text-gray-500 mb-4">Tidak ada modul yang tersedia untuk role Anda.</p>
+                    <button onClick={logout} className="text-sm text-blue-500 hover:underline">
+                        Logout
+                    </button>
+                </div>
+            </main>
+        )
+    }
+
     return (
         <main className="relative flex bg-background min-h-screen">
             <Navbar
-                setActive={setActive}
+                user={user}
+                setActive={handleSetActive}
+                active={active}
                 modules={allowedModules}
                 onLogout={() => setLogoutAlert(true)}
+                onExpandChange={setSidebarExpanded}
             />
 
-            <div className="w-full pr-16 pl-32 py-12">
-                {ActiveComponent && <ActiveComponent />}
+            <div className={`w-full py-12 transition-all duration-300 ease-in-out ${sidebarExpanded ? "pl-70 pr-8" : "pl-32 pr-16"}`}>
+                {ActiveComponent && <ActiveComponent key={active} />}
             </div>
 
             <AnimatePresence>
                 {logoutAlert && (
-                    <motion.div
-                        key="logoutModal"
-                        initial={{ opacity: 0, scale: 1.05, filter: "blur(3px)" }}
-                        animate={{ opacity: 1, scale: 1, filter: "blur(0)" }}
-                        exit={{ opacity: 0, scale: 1.05, filter: "blur(3px)" }}
-                        transition={{ duration: 0.2 }}
-                        className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 will-change-auto"
-                    >   
-                        <Alert 
-                            title="Logout"
-                            msg="Apakah anda yakin ingin logout?" 
-                            onCancel={() => setLogoutAlert(false)} 
-                            onAccept={() => logout()}
-                            acceptText="Logout"
-                            isConfirmation={true}
-                        /> 
-                    </motion.div>
+                    <Alert 
+                        title="Logout"
+                        msg="Apakah anda yakin ingin logout?" 
+                        onCancel={() => setLogoutAlert(false)} 
+                        onAccept={() => logout()}
+                        acceptText="Logout"
+                        isConfirmation={true}
+                    /> 
                 )}
             </AnimatePresence>
         </main>
     )
 }
 
+export default function Dashboard() {
+    return (
+        <Suspense fallback={
+            <main className="relative flex bg-background min-h-screen items-center justify-center">
+                <div className="text-center">
+                    <p className="text-xl text-gray-500">Memuat...</p>
+                </div>
+            </main>
+        }>
+            <DashboardContent />
+        </Suspense>
+    )
+}

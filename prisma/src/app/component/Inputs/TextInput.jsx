@@ -1,30 +1,56 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { motion, AnimatePresence } from "framer-motion"
 
-export default function TextInput({ icon, className, ...props }){
+export default function TextInput({ icon, tag, className, isTextArea = false, error, required, helperText, ...props }){
     return (
-        <div className={`w-full flex flex-col border-[0.5px] border-gray-300 rounded-md px-3 py-3 gap-2 relative ${className}`}>
-            <AnimatePresence>
-                { props.value?.length > 0 &&
-                    <motion.span
-                        initial={{ opacity: 0, scale: 0.95, translateY: 0 }}
-                        animate={{ opacity: 1, scale: 1, translateY: -10 }}
-                        exit={{ opacity: 0, scale: 0.95, translateY: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-gray-400 text-xs absolute top-0 bg-white px-2 left-2"
-                    >
-                        { props.placeholder }
-                    </motion.span>
-                }
-            </AnimatePresence>
+        <div className={`w-full relative ${className}`}>
+            <span className={`text-xs ${error ? 'text-red-500 font-medium' : 'text-gray-500'}`}>
+                { tag ? tag : props.placeholder }
+                { required && <span className="text-red-500 ml-0.5">*</span> }
+            </span>
 
-            <div className="flex items-center w-full gap-2">
-                <FontAwesomeIcon icon={icon} className="text-gray-500 text-md" />                
-                <input 
-                    className="w-full text-sm focus:outline-none" 
-                    {...props}
-                />
+            <div className={`
+                w-full flex flex-col justify-center border-[0.5px] rounded-lg p-3 mt-1 gap-2 transition-all duration-300 ease-in-out
+
+                ${isTextArea ? 'h-fit' : ''}
+                
+                ${props.disabled
+                    ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-70'
+                    : error
+                        ? 'border-red-400 focus-within:border-red-500 focus-within:outline-4 outline-transparent focus-within:outline-red-200'
+                        : 'border-gray-300 focus-within:border-black focus-within:outline-4 outline-transparent focus-within:outline-black/20 cursor-pointer'
+                }
+            `}>
+                <div className={`flex w-full gap-2 ${isTextArea ? 'items-stretch' : 'items-center'}`}>
+                    { icon &&
+                        <FontAwesomeIcon icon={icon} className="text-gray-500 text-md" />
+                    }
+
+                    {!isTextArea ? 
+                        <input 
+                            className="w-full text-sm focus:outline-none disabled:cursor-not-allowed" 
+                            aria-invalid={!!error}
+                            aria-describedby={error ? `${props.name}-error` : helperText ? `${props.name}-helper` : undefined}
+                            {...props}
+                        />
+                        :
+                        <textarea 
+                            className="w-full text-sm focus:outline-none h-full max-h-16 disabled:cursor-not-allowed"
+                            aria-invalid={!!error}
+                            aria-describedby={error ? `${props.name}-error` : helperText ? `${props.name}-helper` : undefined}
+                            {...props}
+                        ></textarea>
+                    }
+                </div>
             </div>
+
+            {error && (
+                <p id={`${props.name}-error`} className="text-red-500 text-xs mt-1">{error}</p>
+            )}
+
+            {!error && helperText && (
+                <p id={`${props.name}-helper`} className="text-gray-400 text-xs mt-1">{helperText}</p>
+            )}
         </div>
+        
     )
 }
