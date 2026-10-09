@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, captureApiEvidence } from '../helpers/evidence'
 import { FRONTEND_URL, waitForDashboard } from '../helpers/navigation'
 
 const BACKEND = process.env.E2E_BACKEND_URL || 'http://localhost:8000'
@@ -83,8 +83,10 @@ test.describe('Ketua LPPM — Mutations', () => {
 
     if (afterProposal) {
       const statusChanged = afterProposal.status !== 'Menunggu review dari Ketua LPPM'
-      const authCreated = afterProposal.status.includes('Menunggu') || afterProposal.status.includes('Ditolak')
-      expect(statusChanged || authCreated).toBeTruthy()
+      const isRejected = afterProposal.status === 'Ditolak'
+      const isReturned = afterProposal.status === 'Revisi'
+      expect(statusChanged).toBeTruthy()
+      expect(isRejected || isReturned).toBeTruthy()
     }
   })
 
@@ -136,6 +138,9 @@ test.describe('Ketua LPPM — Mutations', () => {
       }, { backend: BACKEND, proposalId: claimTarget.proposal_id })
 
       expect(uploadResult.status).toBeGreaterThanOrEqual(400)
+      await captureApiEvidence(page, 'KT-PERM-DANA-001', 'POST', '/dana/upload-bukti', {
+        proposal_id: claimTarget.proposal_id,
+      })
     }
   })
 })

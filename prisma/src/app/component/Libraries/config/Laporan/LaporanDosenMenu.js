@@ -50,7 +50,8 @@ export const createLaporanDosenMenus = ({
                         icon: faBullhorn,
                         enabled: (r) =>
                             canAct(r) &&
-                            ["PUBLIKASI_GANJIL", "PUBLIKASI_GENAP"].includes(r.kode_kegiatan)
+                            ["PUBLIKASI_GANJIL", "PUBLIKASI_GENAP",
+                             "PUBLIKASI_PKM_GANJIL", "PUBLIKASI_PKM_GENAP"].includes(r.kode_kegiatan)
                     }),
                     item("Upload Bukti Terima Claim Dana", handleUploadClaimProof, {
                         icon: faMoneyBillWave,
@@ -78,11 +79,9 @@ export const createLaporanDosenMenus = ({
                 [
                     item("Lihat Alasan Revisi", handleViewRevisiReason, {
                         icon: faExclamationTriangle,
+                        enabled: (r) => r.alasan && r.status === "Revisi",
                     }),
-                ],
-                {
-                    hidden: (r) => r.status !== "Revisi"
-                }
+                ]
             )
         ]
     }

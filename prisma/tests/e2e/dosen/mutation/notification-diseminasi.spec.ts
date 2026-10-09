@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '../../helpers/evidence'
+import { type Page } from '@playwright/test'
 import { FRONTEND_URL, waitForDashboard, navigateToModule } from '../../helpers/navigation'
 
 test.describe('Dosen Notification Mutations', () => {

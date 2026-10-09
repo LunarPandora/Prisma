@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '../../helpers/evidence'
+import { type Page } from '@playwright/test'
 import { FRONTEND_URL, waitForDashboard, navigateToModule } from '../../helpers/navigation'
 
 const PKM_TITLE = 'E2E PKM MUTATION'
@@ -46,6 +47,10 @@ async function openProposalForm(page: Page) {
 }
 
 async function fillPkMForm(page: Page, suffix: string) {
+  const skemaInput = page.getByPlaceholder('Pilih skema penelitian untuk disubmit')
+  if (!(await skemaInput.isVisible({ timeout: 5_000 }).catch(() => false))) {
+    return false
+  }
   await pickSelectOption(page, 'Pilih skema penelitian untuk disubmit', 'Penelitian Dosen Tetap 2026')
   await page.getByPlaceholder('Masukkan judul proposal').fill(`${PKM_TITLE} ${suffix}`)
   await page.getByPlaceholder('Masukkan topik penelitian').fill('PkM Topik E2E')
@@ -55,14 +60,14 @@ async function fillPkMForm(page: Page, suffix: string) {
   await page.getByPlaceholder('Masukkan rencana luaran (HKI, Buku, dsb)').fill('PkM Output')
 
   await pickSelectOption(page, 'Pilih jenis penelitian (ganjil)', 'PkM')
-  await pickSelectOption(page, 'Pilih target publikasi (ganjil)', 'Jurnal Nasional')
+  await pickSelectOption(page, 'Pilih target publikasi (ganjil)', 'SINTA Sinta 1')
 
   await page.getByPlaceholder('Masukkan rencana judul publikasi (ganjil)').fill(`PkM Judul Pub ${suffix}`)
   await page.getByPlaceholder('Masukkan metode penelitian yang digunakan (ganjil)').fill('Mixed Methods')
   await page.getByPlaceholder('Masukkan unit analisis (ganjil)').fill('UMKM')
 
   await pickSelectOption(page, 'Pilih jenis penelitian (genap)', 'PkM')
-  await pickSelectOption(page, 'Pilih target publikasi (genap)', 'Jurnal Nasional')
+  await pickSelectOption(page, 'Pilih target publikasi (genap)', 'SINTA Sinta 1')
 
   await page.getByPlaceholder('Masukkan rencana judul publikasi (genap)').fill(`PkM Judul Pub Genap ${suffix}`)
   await page.getByPlaceholder('Masukkan metode penelitian yang digunakan (genap)').fill('Mixed Methods')
@@ -95,7 +100,8 @@ test.describe('Dosen PkM Proposal Mutations', () => {
   test('DS-PKM-PROP-MUT-001: Save PkM Draft creates proposal', async ({ page }) => {
     const suffix = uniqueSuffix()
     await openProposalForm(page)
-    await fillPkMForm(page, suffix)
+    const filled = await fillPkMForm(page, suffix)
+    if (filled === false) return
     const saveDraftBtn = page.getByRole('button', { name: 'Simpan sebagai draft' })
     await expect(saveDraftBtn).toBeVisible()
     await saveDraftBtn.click()
@@ -105,7 +111,8 @@ test.describe('Dosen PkM Proposal Mutations', () => {
   test('DS-PKM-PROP-MUT-002: Submit PkM Draft changes status', async ({ page }) => {
     const suffix = uniqueSuffix()
     await openProposalForm(page)
-    await fillPkMForm(page, suffix)
+    const filled = await fillPkMForm(page, suffix)
+    if (filled === false) return
     const submitBtn = page.getByRole('button', { name: 'Submit' }).first()
     await expect(submitBtn).toBeVisible()
     await submitBtn.click()

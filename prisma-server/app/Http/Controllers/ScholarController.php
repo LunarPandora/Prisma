@@ -85,6 +85,12 @@ class ScholarController extends Controller
 
         SyncScholarProfile::dispatch($profile->scholar_profile_id);
 
+        Log::info('Scholar: Connect dispatched sync', [
+            'user_id'       => $user->id,
+            'profile_id'    => $profile->scholar_profile_id,
+            'author_id'     => $authorId,
+        ]);
+
         return ApiResponse::success(
             new ScholarProfileResource($profile->load(['citationsByYear'])),
             'Profil terhubung. Sinkronisasi akan dimulai.'
@@ -114,6 +120,12 @@ class ScholarController extends Controller
         }
 
         SyncScholarProfile::dispatch($profile->scholar_profile_id);
+
+        Log::info('Scholar: Manual sync dispatched', [
+            'user_id'    => $user->id,
+            'profile_id' => $profile->scholar_profile_id,
+            'author_id'  => $profile->scholar_author_id,
+        ]);
 
         return ApiResponse::success(
             new ScholarProfileResource($profile->load(['citationsByYear'])),
@@ -244,8 +256,13 @@ class ScholarController extends Controller
     private function refreshPublicationCitationHistory(ScholarProfile $profile, ScholarPublication $publication): void
     {
         if (empty($publication->external_id)) {
+            Log::info('Scholar: Skipping citation history refresh — no external_id', [
+                'publication_id' => $publication->publication_id,
+            ]);
             return;
         }
+
+        $start = microtime(true);
 
         try {
             $provider = new SerpApiProvider();
@@ -265,10 +282,24 @@ class ScholarController extends Controller
                     ]
                 );
             }
+
+            $elapsed = round((microtime(true) - $start) * 1000);
+
+            Log::info('Scholar: Citation history refreshed', [
+                'publication_id'  => $publication->publication_id,
+                'author_id'       => $profile->scholar_author_id,
+                'citation_id'     => $publication->external_id,
+                'years_returned'  => count($history),
+                'elapsed_ms'      => $elapsed,
+            ]);
         } catch (\Exception $e) {
-            Log::warning('Failed to refresh publication citation history', [
+            $elapsed = round((microtime(true) - $start) * 1000);
+
+            Log::warning('Scholar: Citation history refresh failed', [
                 'publication_id' => $publication->publication_id,
+                'author_id'      => $profile->scholar_author_id,
                 'message'        => $e->getMessage(),
+                'elapsed_ms'     => $elapsed,
             ]);
         }
     }

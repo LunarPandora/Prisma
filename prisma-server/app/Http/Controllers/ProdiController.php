@@ -15,10 +15,10 @@ class ProdiController extends Controller
         return Prodi::select('prodi_id', 'nama_prodi')->orderBy('prodi_id')->get();
     }
 
-    public function index()
+    public function index(Request $request)
     {
         return ProdiResource::collection(
-            Prodi::with(['kaprodi'])->orderBy('prodi_id')->paginate(10)
+            Prodi::with(['kaprodi'])->orderBy('prodi_id')->get()
         );
     }
 

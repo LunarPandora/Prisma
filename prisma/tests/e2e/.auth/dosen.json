@@ -2,30 +2,30 @@
   "cookies": [
     {
       "name": "XSRF-TOKEN",
-      "value": "eyJpdiI6IllSNWlmNCtRTnplR2VxK1hjOUZUMFE9PSIsInZhbHVlIjoiOUppRFR6V0txNk9mRDluc013RnNWenVGb1hBU0hwUlBQdGZtT2RFQTJJUUZYNjhxYkt3d0xsV2NVeUNZb0R6Z2FtUVMvYTBUNXFGV3NFY01qSWMzMDZHZC9XN2dJb3pqclhFTUdpZk96SEVyQUFsUnBxdFNWcWZyZUduWXFlZHAiLCJtYWMiOiIyM2JiYjk2ODhjMjk5ZjUzYjgyMjg5ZGQ1MGY3MGI3Y2Y1YWRhMWYxZjY2NTYxNTg5ZThkNzY0NmNlMDhlNDEzIiwidGFnIjoiIn0%3D",
+      "value": "eyJpdiI6IlEyejNieTVrZUxNcktEWTEvVEVHMEE9PSIsInZhbHVlIjoibzRwYUh4akdWb09WRGVNN3MyN2d6Z1dncGdGR3hkT0VKaFJCSG81ZHkwWkIra3ludm93TDJJek5rS0Y5c2FTc0tNNnlZZWFlaStUc3dIUFhwbzgzYWV4VDRBSjNLeXhOZzl6ZTRuY1pIRkFWdHk4NTBPeVJUTUZNMkMzeWNmbTUiLCJtYWMiOiJlMzUzMDIwM2RjYTBiNzU0NzM1ZTAzZDM4ZTY2YWU3ZjZhNTgxNjg2Yjg5ZGY3OTM4NmRkYjBjNjlhMGIwZDFmIiwidGFnIjoiIn0%3D",
       "domain": "localhost",
       "path": "/",
-      "expires": 1787182906.451268,
+      "expires": 1787846826.656453,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "laravel-session",
-      "value": "eyJpdiI6InFCdnNuQUxrRCt6RG1JejBDWFdTYnc9PSIsInZhbHVlIjoidFdmTTVuUmcxMzI1NE1JNUZ0b1dQUllJcFBnb2pGR0ZNNityZ1UySFJtMDM3OG5wTE1Mc1dscXRJZUtDSWJwcFh0T3BlVGQ1cDNKMWsrTkd6REpTNW9ZQ29iOEdwRGI0ZkJQQ25zM3FCYzdDNXlTQlJvS2tqeldzTmpvNEdkeHIiLCJtYWMiOiIyMjNhOWFhMTYwNjFiMmFmMzYwNjg3OTFlZTAyNjhkZGFhNzI4MmNiMGVlNzRiZTVjY2M4NzY1YTQ1M2VmOGVmIiwidGFnIjoiIn0%3D",
+      "value": "eyJpdiI6InUveWptaEhlKzI2dzl1dkFyZVdMQWc9PSIsInZhbHVlIjoidWFCMGRSb1NhQyt1ZU80Zi9RdGZzeEZBRFVoRUgyTW1IWnFyalFIWkMvcENJUFZtemUrVTQrQTdhYWZtZHk5YWNUdlkrNTVKWFFOMitmL2czY1VPVHppakxJYjFnamxCMjZRSWlZeTNDdFo4Si90aWhoa1Z1Zm1DZGFyZFFqNFYiLCJtYWMiOiJjM2U3Mzk0ZTBhYzlhNTFmODIxYWFhODM1OGJmNDgwNDU2Yzg2NWFjNzBjNmNmODE5NWIxNDUwZTU0NjJmOTUxIiwidGFnIjoiIn0%3D",
       "domain": "localhost",
       "path": "/",
-      "expires": 1787182906.451346,
+      "expires": 1787846826.656488,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"
     },
     {
-      "name": "D3ehKdCZb5yfVojsarZqDeIQaL8kpV3CdOzrhWEY",
-      "value": "eyJpdiI6Inc4ZHRUdjNGSGxOeHhxRjFZaEdvZWc9PSIsInZhbHVlIjoidEEzZ01PSWNSZFh1U2txckJPZDNqQWhYeHJHY0hCclB5bXRKTDYvYXFsdUFKWUpKWWxsdy9xQ3hNLzErUnVjUDVubnUxMVVrNEJRU05yOHYwZk0rZytlZkRwNnQ1L0NXTC95NzR5NVpWSHYydkxLYU9GYzJqenEvZTRNSnExb2s2eWxjdlRhNGZUN1VTY3BhUUZuRzFuRkZvMEpBSnBuTXFadTgvbm1BRWo4R0RZOGZnRWhaQ0h3SUZHbmpWa2Y0bE9VdHFNNmVUb1doY2d3UTVqV2NsU2lrNWRSa3hJSGp6L29ETHp0T1FvY05CVmVRdkthUWNHNGs5THd0VnJ2a0phdm1TcDVIa1grMjV3TFBKOWdWRTFjMWZUWlEvdDNPWFFYL1NoNlVxNExyWGFRa0FFUEVVL3lseEFFTG9JVXhJajBmaEM0dk1FeFlwMk04SUpJTnJCZ25hNHJvc1hnWEtLVEh0ak9RY3lRVjdIYkRNa1RmbWJ6KzlTRHFHMkxPc0VZR0RMWHZ0U1lJTjRQUWo4bzEzUGtiMVA0NWFxMHRXWHNWUHU2TzZaOGVqc1pYMWg5ZjdVVlpkVzZoY09nODVFWXBDNXV1Q1Jpb3VDejdDSFA3c212NnZoNmJBVGVFaWJMRDNEcmE5L1BtalNBVDVtS2x5a2g0SkxzKzBpbUVLeTNuazI4QzU2MnRXY1B0bkVJZzNBPT0iLCJtYWMiOiI3MDIzNzBhYzVhNTZmZGQ3MTUzYzIxMzI2ODE0OWExY2ZhODM0M2IyM2E2YzQ5MjkxZDkxYWE1OThkZmI5YzVjIiwidGFnIjoiIn0%3D",
+      "name": "8j9RNlVmhvIM9S8wGtl98enbqVQep1c891bLxILO",
+      "value": "eyJpdiI6InVkTzFjZ0RsR0FpQlpmQVg4UFI1YUE9PSIsInZhbHVlIjoiYUkrbEJHcEhkcVdmYjB6ZkpzNmEzMGpEU2Q5WkdoRGIrNjUyc3VpaGpVUjlOelNNenMvOFdyUXErd2c0bXE0eTFveW43elRWQnBINXM2eUtPYzlqMnZERGtJT0dOMGVESDZiM1Q2bkJMdEkzY2hOU3FVeUJybkpzRWpvaVNqeURPaDU4YTdUaGJyZVVqVVhPcVIxSzliejBqbWM1YlFmTXBCRGFkWlhBc0FlU2JsSDB1Wmx1VjRjalhCK05SSjd1VGdqd0FkWVZodkxBRURyN0JvQi9CT1d5K3o4bDlaODMvN3o0OGI2SWNHOHVDekcyUy9BL3VGQ2IzbXM2ODlkcE90NUpXRTMwR1h6VFg2ZXdLb0lxYThnWnRMUk1oclV0cGVTUGJYZWZqbXRoWHlDYkRxTXFTQkIxTUZYMlRCakRKd0tkbHdUQUZJWGVsK0R1di95RXNmdmQ4MzR6THhDNEZqdWs4OG1sSC9Zb1ZZTTJjczZ4ZDduaUtUSWpkTXIyMU1wK2NIVTZlWFhSOXFTdm9tRU9pZk9pU0FHOUVOdm96SFJUTmo4NXZkNXlsaUFnb1V2ZVVTbWVFOGY3UVlPa2Q5RHNpTVlxUjFOVlJmaTlmNGtLSnZ5cGduRmVaT2hMaytBcU1sVHo2SDVJS202ajl1N2EzM1hBU1Z3cDNvalFRcWJvbWVhdE1DNEhTWm11eWxCNTM3N2xacElHdHppZnd0MHJNUkdDQ0pzPSIsIm1hYyI6IjZiNjQ1ZTMwZTY2MDQxYzA2ZDkyNjhlYTJlNDM2NmQwMjM0OTE4Y2QxZmYwNjEwYjY1ZGEwYmY4Yjk3N2Q3ZDkiLCJ0YWciOiIifQ%3D%3D",
       "domain": "localhost",
       "path": "/",
-      "expires": 1787182906.4514,
+      "expires": 1787846826.65651,
       "httpOnly": true,
       "secure": false,
       "sameSite": "Lax"
@@ -37,7 +37,7 @@
       "localStorage": [
         {
           "name": "user-storage",
-          "value": "{\"state\":{\"user\":{\"id\":3,\"nama\":\"Dosen E2E\",\"role\":\"Dosen\",\"avatar\":\"http://localhost:8000/storage/avatars/default_3_74b3e80b.webp\"}},\"version\":0}"
+          "value": "{\"state\":{\"user\":{\"id\":10,\"nama\":\"Dosen E2E\",\"role\":\"Dosen\",\"avatar\":\"http://localhost:8000/storage/avatars/default_10_74b3e80b.webp\"}},\"version\":0}"
         }
       ]
     }

@@ -49,6 +49,7 @@ export default function MonitoringDanaAdmin({ mode = "claim", skema, onBack }) {
     const [showBuktiTransferModal, setShowBuktiTransferModal] = useState(false)
     const [buktiTransferFile, setBuktiTransferFile] = useState(null)
     const [loadingBuktiTransfer, setLoadingBuktiTransfer] = useState(false)
+    const [showConfirmUpload, setShowConfirmUpload] = useState(false)
 
     const user = useUserStore(state => state.user)
     const access = getModuleAccess("staffmonitoringprogresslaporan", user?.role)
@@ -171,10 +172,14 @@ export default function MonitoringDanaAdmin({ mode = "claim", skema, onBack }) {
                     onContextRequest={(e, type, data, source) =>
                         openMenu(e, type, data, source)
                     }
-                    maxActions={3}
                     onRefresh={refreshTable}
                     rowActions={
-                        (menus.row ?? []).flatMap(group => group.items ?? [])
+                        (menus.row ?? []).flatMap(group =>
+                            (group.items ?? []).map(a => ({
+                                ...a,
+                                hidden: a.hidden || group.hidden,
+                            }))
+                        )
                     }
                     columns={[
                         {
@@ -354,7 +359,7 @@ export default function MonitoringDanaAdmin({ mode = "claim", skema, onBack }) {
                                     Batal
                                 </Button>
                                 <Button
-                                    onClick={runUploadBuktiTransfer}
+                                    onClick={() => setShowConfirmUpload(true)}
                                     disabled={!buktiTransferFile || loadingBuktiTransfer}
                                 >
                                     {loadingBuktiTransfer ? "Mengupload..." : "Upload"}
@@ -379,6 +384,22 @@ export default function MonitoringDanaAdmin({ mode = "claim", skema, onBack }) {
                     />
                 )}
             </AnimatePresence>
+
+            {showConfirmUpload && (
+                <Alert
+                    alertType="warning"
+                    title="Upload Bukti Transfer"
+                    msg="Apakah Anda yakin ingin mengupload bukti transfer ini?"
+                    onCancel={() => setShowConfirmUpload(false)}
+                    onAccept={() => {
+                        setShowConfirmUpload(false)
+                        runUploadBuktiTransfer()
+                    }}
+                    acceptText="Upload"
+                    isConfirmation={true}
+                    withBackground={true}
+                />
+            )}
 
             <ContextMenu
                 contextMenu={contextMenu}

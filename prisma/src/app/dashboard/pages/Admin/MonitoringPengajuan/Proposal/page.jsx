@@ -2,16 +2,15 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { faCheck, faFile, faQuestion, faX } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faFile, faQuestion, faX, faCircleCheck, faCircleHalfStroke } from "@fortawesome/free-solid-svg-icons";
 import { useUserStore } from "@/app/stores/useUserStore";
 
 import { getModuleAccess } from "@/app/component/Libraries/utils/menu";
 
 import { getProposal } from "@/app/component/Libraries/api/proposal";
 import { ketuaDecideSeleksi, staffDecideSeleksi } from "@/app/component/Libraries/api/proposal";
-import { createAuthorizationRequest } from "@/app/component/Libraries/api/authorization";
+
 import { useQueryBuilder } from "@/app/component/Libraries/hooks/useQueryBuilder";
-import useHighlight from "@/app/component/Libraries/hooks/useHighlight";
 
 import CustomTable from "@/app/component/Table/CustomTable";
 import { formatIndonesianDate } from "@/app/component/Libraries/utils/date";
@@ -20,7 +19,7 @@ import SelectInput from "@/app/component/Inputs/SelectInput";
 import { useContextMenu } from "@/app/component/Libraries/hooks/useContextMenu";
 import ContextMenu from "@/app/component/Context/ContextMenu";
 import { createProposalAdminMenus } from "@/app/component/Libraries/config/Proposal/proposalAdminMenu";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import FormPenugasanReviewer from "./PenugasanReviewerForm";
 import FormPenolakanPengajuan from "./PenolakanPengajuanForm";
 import FormProposalViewAdmin from "./ProposalViewForm";
@@ -31,8 +30,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import FormHasilReview from "./HasilReviewForm";
 import PengumumanSuratTugasPanel from "./PengumumanSuratTugasPanel";
 import TerimaProposalForm from "./TerimaProposalForm";
+import Alert from "@/app/component/Alert/Alert";
+import Modal from "@/app/component/Modal/Modal";
+import Button from "@/app/component/Inputs/Button";
+import { showToast } from "@/app/component/Toast/Toast";
 
-export default function Proposal({ skema, onBack, highlightId, initialTab, initialJenis }){
+export default function Proposal({ skema, onBack, highlightId, initialTab, initialJenis, onHighlightComplete }){
     const defaultForm = {
         search: "",
     }
@@ -53,7 +56,14 @@ export default function Proposal({ skema, onBack, highlightId, initialTab, initi
 
     const [loadingForm, setLoadingForm] = useState(false)
 
-    const highlight = useHighlight(2000)
+    const [showReasonModal, setShowReasonModal] = useState(false)
+    const [reasonModalData, setReasonModalData] = useState(null)
+    const [reasonText, setReasonText] = useState("")
+    const [reasonLoading, setReasonLoading] = useState(false)
+
+    const [showAcceptConfirmModal, setShowAcceptConfirmModal] = useState(false)
+    const [acceptConfirmData, setAcceptConfirmData] = useState(null)
+    const [acceptLoading, setAcceptLoading] = useState(false)
 
     const tabs = [
         {
@@ -94,22 +104,13 @@ export default function Proposal({ skema, onBack, highlightId, initialTab, initi
         }
     }, [availableTypes])
 
-    useEffect(() => {
-        if (highlightId) {
-            const timer = setTimeout(() => {
-                highlight(`row-${highlightId}`, { scroll: true })
-            }, 500)
-            return () => clearTimeout(timer)
-        }
-    }, [highlightId, highlight, refreshKey])
-
     const user = useUserStore(state => state.user)
     const access = getModuleAccess("staffmonitoringprogress", user?.role)
     const isKetua = user?.role === "Ketua LPPM"
 
     const statusReviewStyles = {
-        'belum direview': {icon: faX, color: 'text-red-600'},
-        'telah direview': {icon: faCheck, color: 'text-green-600'},
+        'belum direview': {icon: faCircleHalfStroke, color: 'text-yellow-500'},
+        'telah direview': {icon: faCircleCheck, color: 'text-green-600'},
         default: {icon: faQuestion, color: 'text-blue-600'}
     }
 
@@ -130,7 +131,12 @@ export default function Proposal({ skema, onBack, highlightId, initialTab, initi
     })
 
     const rowActions = useMemo(() =>
-        menus.row.flatMap(group => group.items),
+        menus.row.flatMap(group =>
+            group.items.map(a => ({
+                ...a,
+                hidden: a.hidden || group.hidden,
+            }))
+        ),
     [menus])
 
     function handleShow(r){
@@ -169,85 +175,97 @@ export default function Proposal({ skema, onBack, highlightId, initialTab, initi
     }
 
     async function handleKetuaDecideSeleksi(r){
-        try {
-            const formData = new FormData()
-            formData.append('proposal_id', r.proposal_id)
-            formData.append('decision', r.decision || 'accept')
-
-            if (r.decision === 'reject') {
-                const catatan = prompt('Alasan penolakan:')
-                if (catatan === null) return
-                formData.append('catatan', catatan || 'Proposal ditolak oleh Ketua LPPM')
-            }
-
-            await ketuaDecideSeleksi(formData)
-        } catch(err){
-            console.error(err)
-        } finally {
-            setTimeout(() => {
-                refreshTable()
-            }, 300)
+        if (r.decision === 'reject') {
+            setReasonModalData({ type: 'ketuaDecideSeleksi', data: r })
+            setReasonText("")
+            setShowReasonModal(true)
+            return
         }
+        setAcceptConfirmData({ type: 'ketuaDecideSeleksi', data: r })
+        setShowAcceptConfirmModal(true)
     }
 
     async function handleStaffDecideSeleksi(r, decision = 'accept'){
-        try {
-            const formData = new FormData()
-            formData.append('proposal_id', r.proposal_id)
-            formData.append('decision', decision)
-
-            if (decision === 'reject') {
-                const catatan = prompt('Alasan penolakan:')
-                if (catatan === null) return
-                formData.append('catatan', catatan || 'Proposal ditolak oleh Staff LPPM')
-            }
-
-            await staffDecideSeleksi(formData)
-        } catch(err){
-            console.error(err)
-        } finally {
-            setTimeout(() => {
-                refreshTable()
-            }, 300)
-        }
-    }
-
-    async function handleStaffRejectProposal(r) {
-        const reason = prompt('Alasan penolakan proposal:')
-        if (!reason || reason.length < 10) {
-            alert('Alasan harus minimal 10 karakter')
+        if (decision === 'reject') {
+            setReasonModalData({ type: 'staffDecideSeleksi', data: r })
+            setReasonText("")
+            setShowReasonModal(true)
             return
         }
+        setAcceptConfirmData({ type: 'staffDecideSeleksi', data: r })
+        setShowAcceptConfirmModal(true)
+    }
+
+    async function submitAcceptConfirm() {
+        if (!acceptConfirmData) return
+        setAcceptLoading(true)
         try {
-            await createAuthorizationRequest({
-                requestable_type: 'Proposal',
-                requestable_id: r.proposal_id,
-                action: 'reject_proposal',
-                reason,
-            })
+            const { type, data: r } = acceptConfirmData
+            const formData = new FormData()
+            formData.append('proposal_id', r.proposal_id)
+            formData.append('decision', 'accept')
+
+            if (type === 'ketuaDecideSeleksi') {
+                await ketuaDecideSeleksi(formData)
+            } else {
+                await staffDecideSeleksi(formData)
+            }
         } catch(err) {
             console.error(err)
         } finally {
+            setAcceptLoading(false)
+            setShowAcceptConfirmModal(false)
+            setAcceptConfirmData(null)
             refreshTable()
         }
     }
 
+    async function handleStaffRejectProposal(r) {
+        setReasonModalData({ type: 'staffRejectProposal', data: r })
+        setReasonText("")
+        setShowReasonModal(true)
+    }
+
     async function handleStaffReturnProposal(r) {
-        const reason = prompt('Alasan pengembalian untuk perbaikan:')
-        if (!reason || reason.length < 10) {
-            alert('Alasan harus minimal 10 karakter')
+        setReasonModalData({ type: 'staffReturnProposal', data: r })
+        setReasonText("")
+        setShowReasonModal(true)
+    }
+
+    async function submitReason() {
+        if (!reasonText || reasonText.length < 10) {
+            showToast("Alasan harus minimal 10 karakter.", "error")
             return
         }
+        setReasonLoading(true)
         try {
-            await createAuthorizationRequest({
-                requestable_type: 'Proposal',
-                requestable_id: r.proposal_id,
-                action: 'return_proposal_for_revision',
-                reason,
-            })
+            const { type, data: r } = reasonModalData
+            if (type === 'ketuaDecideSeleksi') {
+                const formData = new FormData()
+                formData.append('proposal_id', r.proposal_id)
+                formData.append('decision', 'reject')
+                formData.append('catatan', reasonText || 'Proposal ditolak oleh Ketua LPPM')
+                await ketuaDecideSeleksi(formData)
+            } else if (type === 'staffDecideSeleksi') {
+                const formData = new FormData()
+                formData.append('proposal_id', r.proposal_id)
+                formData.append('decision', 'reject')
+                formData.append('catatan', reasonText || 'Proposal ditolak oleh Staff LPPM')
+                await staffDecideSeleksi(formData)
+            } else if (type === 'staffRejectProposal' || type === 'staffReturnProposal') {
+                const formData = new FormData()
+                formData.append('proposal_id', r.proposal_id)
+                formData.append('decision', 'reject')
+                formData.append('catatan', reasonText || 'Proposal dikembalikan untuk perbaikan oleh Staff LPPM')
+                await staffDecideSeleksi(formData)
+            }
         } catch(err) {
             console.error(err)
         } finally {
+            setReasonLoading(false)
+            setShowReasonModal(false)
+            setReasonModalData(null)
+            setReasonText("")
             refreshTable()
         }
     }
@@ -409,10 +427,11 @@ export default function Proposal({ skema, onBack, highlightId, initialTab, initi
                             refreshKey={refreshKey}
                             className="w-full"
                             onContextRequest={(e, type, data, source) => openMenu(e, type, data, source)}
-                            maxActions={isKetua ? 3 : 5}
                             rowActions={rowActions}
                             onRefresh={refreshTable}
                             rowHighlightKey="proposal_id"
+                            highlightId={highlightId}
+                            onHighlightComplete={onHighlightComplete}
                     columns={[  
                         {
                             header: "Jenis",
@@ -517,14 +536,6 @@ export default function Proposal({ skema, onBack, highlightId, initialTab, initi
                                         {isSeleksi && (
                                             <div className="flex gap-1">
                                                 <Badge
-                                                    color={row.ketua_seleksi_approved ? 'green' : 'gray'}
-                                                    size="xs"
-                                                    variant="bordered"
-                                                    intensity="light"
-                                                >
-                                                    Ketua: {row.ketua_seleksi_approved ? "✓ Setuju" : "○ Belum"}
-                                                </Badge>
-                                                <Badge
                                                     color={row.has_pending_seleksi_rejection ? 'red' : row.staff_seleksi_approved ? 'green' : 'gray'}
                                                     size="xs"
                                                     variant="bordered"
@@ -533,6 +544,14 @@ export default function Proposal({ skema, onBack, highlightId, initialTab, initi
                                                     Staff: {row.has_pending_seleksi_rejection
                                                         ? "✗ Ditolak"
                                                         : row.staff_seleksi_approved ? "✓ Setuju" : "○ Belum"}
+                                                </Badge>
+                                                <Badge
+                                                    color={row.ketua_seleksi_approved ? 'green' : 'gray'}
+                                                    size="xs"
+                                                    variant="bordered"
+                                                    intensity="light"
+                                                >
+                                                    Ketua: {row.ketua_seleksi_approved ? "✓ Setuju" : "○ Belum"}
                                                 </Badge>
                                             </div>
                                         )}
@@ -595,7 +614,6 @@ export default function Proposal({ skema, onBack, highlightId, initialTab, initi
                     <FormProposalViewAdmin
                         close={(x) => x == 'all' ? closeAllModal() : setShowProposalViewModal(false)}
                         data={tempRowData}
-                        triggerPenugasan={(d) => handlePenugasan(d)}
                         triggerTolak={(d) => handleTolak(d)}
                         handleKetuaDecideSeleksi={handleKetuaDecideSeleksi}
                         handleStaffDecideSeleksi={handleStaffDecideSeleksi}
@@ -652,6 +670,74 @@ export default function Proposal({ skema, onBack, highlightId, initialTab, initi
                 closeMenu={closeMenu}
                 menus={menus}
             />
+
+            <AnimatePresence>
+                {showReasonModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 will-change-auto"
+                    >
+                        <div className="bg-white rounded-xl p-6 w-full max-w-xl flex flex-col gap-4">
+                            <h2 className="text-xl font-medium">
+                                {reasonModalData?.type === 'ketuaDecideSeleksi' && "Alasan Penolakan"}
+                                {reasonModalData?.type === 'staffDecideSeleksi' && "Alasan Penolakan"}
+                                {reasonModalData?.type === 'staffRejectProposal' && "Alasan Penolakan Proposal"}
+                                {reasonModalData?.type === 'staffReturnProposal' && "Alasan Pengembalian Proposal"}
+                            </h2>
+                            <p className="text-gray-600">
+                                {reasonModalData?.type === 'staffReturnProposal'
+                                    ? "Kembalikan proposal ke peneliti untuk direvisi. Berikan catatan agar peneliti tahu apa yang perlu diperbaiki."
+                                    : "Berikan alasan penolakan agar peneliti mengetahui apa yang perlu diperbaiki."}
+                            </p>
+                            <textarea
+                                value={reasonText}
+                                onChange={(e) => setReasonText(e.target.value)}
+                                placeholder="Tulis alasan di sini..."
+                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black/20"
+                                rows={4}
+                            />
+                            <div className="flex gap-2 justify-end mt-2">
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        setShowReasonModal(false)
+                                        setReasonModalData(null)
+                                        setReasonText("")
+                                    }}
+                                >
+                                    Batal
+                                </Button>
+                                <Button
+                                    variant={reasonModalData?.type === 'staffReturnProposal' ? 'warning' : 'danger'}
+                                    onClick={submitReason}
+                                    disabled={reasonLoading || reasonText.length < 10}
+                                >
+                                    {reasonLoading ? "Memproses..." : "Kirim"}
+                                </Button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {showAcceptConfirmModal && (
+                <Alert
+                    alertType="warning"
+                    title="Setujui Proposal"
+                    msg="Apakah Anda yakin ingin menyetujui proposal ini? Proposal akan masuk tahap selanjutnya."
+                    onCancel={() => {
+                        setShowAcceptConfirmModal(false)
+                        setAcceptConfirmData(null)
+                    }}
+                    onAccept={submitAcceptConfirm}
+                    acceptText="Setujui"
+                    isConfirmation={true}
+                    withBackground={true}
+                    loading={acceptLoading}
+                />
+            )}
         </div>
     )
 }

@@ -25,84 +25,111 @@ class E2ESuperadminSeeder extends Seeder
         $prodiKW = Prodi::create(['nama_prodi' => 'Kewirausahaan']);
 
         // ── Superadmin (E2E login account) ──
-        $superadmin = User::create([
-            'nama' => 'Superadmin E2E', 'email' => 'superadmin.e2e@itbss.ac.id',
+        $superadmin = User::firstOrCreate(
+            ['email' => 'superadmin.e2e@itbss.ac.id'],
+            [
+'nama' => 'Superadmin E2E',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Superadmin', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '90001', 'nuptk' => '99001', 'no_hp' => '081234567800',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
         // ── Supporting users ──
-        $ketua = User::create([
-            'nama' => 'Ketua LPPM', 'email' => 'ketua.lppm@itbss.ac.id',
+        $ketua = User::firstOrCreate(
+            ['email' => 'ketua.lppm@itbss.ac.id'],
+            [
+'nama' => 'Ketua LPPM',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Ketua LPPM', 'status' => 'Aktif', 'gender' => 'P',
             'nidn' => '10001', 'no_hp' => '081234567891',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $staff = User::create([
-            'nama' => 'Staff LPPM 1', 'email' => 'staff.lppm1@itbss.ac.id',
+        $staff = User::firstOrCreate(
+            ['email' => 'staff.lppm1@itbss.ac.id'],
+            [
+'nama' => 'Staff LPPM 1',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Staff LPPM', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '10002', 'no_hp' => '081234567892',
             'prodi_id' => $prodiBD->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
         // ── Edit target user (for SA-USER-MUT-002) ──
-        User::create([
-            'nama' => 'E2E USER EDIT TARGET', 'email' => 'e2e.user.edit@itbss.ac.id',
-            'email_verified_at' => $now, 'password' => Hash::make('password'),
-            'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'L',
-            'nidn' => '50001', 'nuptk' => '55001', 'no_hp' => '081234567810',
-            'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+        User::firstOrCreate(
+            ['email' => 'e2e.user.edit@itbss.ac.id'],
+            [
+                'nama' => 'E2E USER EDIT TARGET',
+                'email_verified_at' => $now, 'password' => Hash::make('password'),
+                'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'L',
+                'nidn' => '50001', 'nuptk' => '55001', 'no_hp' => '081234567810',
+                'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
+            ]
+        );
 
         // ── Delete target user (for SA-USER-MUT-004) ──
-        $deleteTarget = User::create([
-            'nama' => 'E2E USER DELETE TARGET', 'email' => 'e2e.user.delete@itbss.ac.id',
+        $deleteTarget = User::firstOrCreate(
+            ['email' => 'e2e.user.delete@itbss.ac.id'],
+            [
+'nama' => 'E2E USER DELETE TARGET',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Dosen', 'status' => 'Nonaktif', 'gender' => 'P',
             'nidn' => '50002', 'nuptk' => '55002', 'no_hp' => '081234567811',
             'prodi_id' => $prodiBD->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
         // ── Status toggle target (for SA-USER-MUT-003) ──
-        User::create([
-            'nama' => 'E2E USER STATUS TARGET', 'email' => 'e2e.user.status@itbss.ac.id',
-            'email_verified_at' => $now, 'password' => Hash::make('password'),
-            'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'L',
-            'nidn' => '50003', 'nuptk' => '55003', 'no_hp' => '081234567812',
-            'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+        User::firstOrCreate(
+            ['email' => 'e2e.user.status@itbss.ac.id'],
+            [
+                'nama' => 'E2E USER STATUS TARGET',
+                'email_verified_at' => $now, 'password' => Hash::make('password'),
+                'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'L',
+                'nidn' => '50003', 'nuptk' => '55003', 'no_hp' => '081234567812',
+                'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
+            ]
+        );
 
         // ── Existing user for email uniqueness test (SA-USER-VAL-001) ──
-        User::create([
-            'nama' => 'Existing User', 'email' => 'existing.user@itbss.ac.id',
-            'email_verified_at' => $now, 'password' => Hash::make('password'),
-            'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'L',
-            'nidn' => '50004', 'nuptk' => '55004', 'no_hp' => '081234567813',
-            'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+        User::firstOrCreate(
+            ['email' => 'existing.user@itbss.ac.id'],
+            [
+                'nama' => 'Existing User',
+                'email_verified_at' => $now, 'password' => Hash::make('password'),
+                'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'L',
+                'nidn' => '50004', 'nuptk' => '55004', 'no_hp' => '081234567813',
+                'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
+            ]
+        );
 
         // ── NIDN uniqueness test user (SA-USER-ID-004) ──
-        User::create([
-            'nama' => 'NIDN Unique User', 'email' => 'nidn.unique@itbss.ac.id',
-            'email_verified_at' => $now, 'password' => Hash::make('password'),
-            'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'L',
-            'nidn' => '50005', 'nuptk' => '', 'no_hp' => '081234567814',
-            'prodi_id' => $prodiBD->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+        User::firstOrCreate(
+            ['email' => 'nidn.unique@itbss.ac.id'],
+            [
+                'nama' => 'NIDN Unique User',
+                'email_verified_at' => $now, 'password' => Hash::make('password'),
+                'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'L',
+                'nidn' => '50005', 'nuptk' => '', 'no_hp' => '081234567814',
+                'prodi_id' => $prodiBD->prodi_id, 'remember_token' => Str::random(10),
+            ]
+        );
 
         // ── NUPTK uniqueness test user (SA-USER-ID-005) ──
-        User::create([
-            'nama' => 'NUPTK Unique User', 'email' => 'nuptk.unique@itbss.ac.id',
-            'email_verified_at' => $now, 'password' => Hash::make('password'),
-            'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'P',
-            'nidn' => '', 'nuptk' => '55006', 'no_hp' => '081234567815',
-            'prodi_id' => $prodiKW->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+        User::firstOrCreate(
+            ['email' => 'nuptk.unique@itbss.ac.id'],
+            [
+                'nama' => 'NUPTK Unique User',
+                'email_verified_at' => $now, 'password' => Hash::make('password'),
+                'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'P',
+                'nidn' => '', 'nuptk' => '55006', 'no_hp' => '081234567815',
+                'prodi_id' => $prodiKW->prodi_id, 'remember_token' => Str::random(10),
+            ]
+        );
 
         // ── Mahasiswa fixtures ──
         Mahasiswa::create([
@@ -130,13 +157,13 @@ class E2ESuperadminSeeder extends Seeder
         Settings::create([
             'kepala_lppm' => $ketua->id,
             'nama_kampus' => 'Institut Teknologi Batam Satu',
-            'kriteria_penilaian' => json_encode([
+            'kriteria_penilaian' => [
                 ['kriteria' => 'Kesesuaian Tema', 'bobot' => 30],
                 ['kriteria' => 'Metodologi', 'bobot' => 30],
                 ['kriteria' => 'Timeline', 'bobot' => 20],
                 ['kriteria' => 'Anggaran', 'bobot' => 20],
-            ]),
-            'list_kesesuaian_tema' => json_encode(['SDGs', 'Teknologi', 'Kesehatan']),
+            ],
+            'list_kesesuaian_tema' => ['SDGs', 'Teknologi', 'Kesehatan'],
             'ignore_kegiatan_dates' => true,
             'rektor_nama' => 'Prof. Rektor E2E',
             'rektor_nidn' => '90000',

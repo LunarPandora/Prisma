@@ -6,6 +6,7 @@ import { faUpload } from '@fortawesome/free-solid-svg-icons'
 
 import Button from "@/app/component/Inputs/Button"
 import Modal from "@/app/component/Modal/Modal"
+import Alert from "@/app/component/Alert/Alert"
 
 import { acceptProposalSuratTugas } from "@/app/component/Libraries/api/proposal"
 import { showToast } from "@/app/component/Toast/Toast"
@@ -18,6 +19,7 @@ import { useFormSubmission } from "@/app/component/Libraries/hooks/useFormSubmis
 export default function TerimaProposalForm({ refresh, close, data }){
     const [selectedFile, setSelectedFile] = useState(null)
     const fileInputRef = useRef(null)
+    const [showConfirm, setShowConfirm] = useState(false)
 
     const { loading, submit } = useFormSubmission({
         onSuccess: () => {
@@ -58,6 +60,7 @@ export default function TerimaProposalForm({ refresh, close, data }){
     }
 
     return (
+        <>
         <Modal
             isOpen={true}
             onClose={() => close('this')}
@@ -69,7 +72,7 @@ export default function TerimaProposalForm({ refresh, close, data }){
                     <Button variant="secondary" onClick={() => close('this')}>
                         Kembali
                     </Button>
-                    <Button onClick={handleAccept} disabled={!selectedFile || loading}>
+                    <Button onClick={() => setShowConfirm(true)} disabled={!selectedFile || loading}>
                         {loading ? "Menyimpan..." : "Terima Proposal"}
                     </Button>
                 </>
@@ -117,5 +120,22 @@ export default function TerimaProposalForm({ refresh, close, data }){
                 </div>
             </div>
         </Modal>
+
+        {showConfirm && (
+            <Alert
+                alertType="warning"
+                title="Terima Proposal"
+                msg="Apakah Anda yakin ingin menerima proposal ini? Status proposal akan berubah menjadi 'Proposal Diterima'."
+                onCancel={() => setShowConfirm(false)}
+                onAccept={() => {
+                    handleAccept()
+                }}
+                acceptText="Terima"
+                isConfirmation={true}
+                withBackground={true}
+                loading={loading}
+            />
+        )}
+        </>
     )
 }

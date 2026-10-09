@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../helpers/evidence'
 import { FRONTEND_URL, waitForDashboard, navigateToModule } from '../helpers/navigation'
 
 const BACKEND = process.env.E2E_BACKEND_URL || 'http://localhost:8000'
@@ -44,11 +44,7 @@ test.describe('Superadmin - Settings Management', () => {
     const namaKampusInput = page.locator('input[name="nama_kampus"]')
     await expect(namaKampusInput).toBeVisible({ timeout: 15_000 })
 
-    await namaKampusInput.evaluate((el) => {
-      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
-      nativeInputValueSetter?.call(el, 'E2E Kampus Updated')
-      el.dispatchEvent(new Event('input', { bubbles: true }))
-    })
+    await namaKampusInput.fill('E2E Kampus Updated')
 
     const saveBtn = page.getByRole('button', { name: /Simpan Perubahan/i })
     await expect(saveBtn).toBeVisible()

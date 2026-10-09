@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, captureApiEvidence } from '../helpers/evidence'
 import { FRONTEND_URL, waitForDashboard, navigateToModule } from '../helpers/navigation'
 
 const BACKEND = process.env.E2E_BACKEND_URL || 'http://localhost:8000'
@@ -34,6 +34,9 @@ test.describe('Superadmin — Empty Required Fields Validation', () => {
       password: '',
       role: 'Staff LPPM',
       status: 'Aktif',
+    })
+    await captureApiEvidence(page, 'SA-USER-VAL-004', 'POST', '/users/add', {
+      nama: '', email: '', password: '', role: 'Staff LPPM', status: 'Aktif',
     })
 
     expect(response.status).toBe(422)

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../helpers/evidence'
 import { FRONTEND_URL, waitForDashboard, navigateToModule } from '../helpers/navigation'
 
 test.describe('Staff LPPM Dashboard', () => {
@@ -20,12 +20,11 @@ test.describe('Staff LPPM Dashboard', () => {
     await expect(page.getByText('Konfirmasi Dana').first()).toBeVisible()
   })
 
-  test('ST-DASH-003: Summary card action links navigate correctly', async ({ page }) => {
+  test('ST-DASH-003: Summary card action opens task modal', async ({ page }) => {
     const periksaProposal = page.getByText('Periksa Proposal')
     if (await periksaProposal.isVisible({ timeout: 5_000 }).catch(() => false)) {
       await periksaProposal.click()
-      await page.waitForLoadState('domcontentloaded')
-      expect(page.url()).toContain('module=staffmonitoringprogress')
+      await expect(page.getByText('Proposal Menunggu Pemeriksaan')).toBeVisible()
     }
   })
 

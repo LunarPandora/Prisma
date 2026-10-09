@@ -27,213 +27,310 @@ class E2EDosenSeeder extends Seeder
         $prodiBD = Prodi::create(['nama_prodi' => 'Bisnis Digital']);
 
         // ── Users ──
-        $ketua = User::create([
-            'nama' => 'Ketua LPPM', 'email' => 'ketua.lppm@itbss.ac.id',
+        $ketua = User::firstOrCreate(
+            ['email' => 'ketua.lppm@itbss.ac.id'],
+            [
+'nama' => 'Ketua LPPM',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Ketua LPPM', 'status' => 'Aktif', 'gender' => 'P',
             'nidn' => '10001', 'no_hp' => '081234567891',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $staff = User::create([
-            'nama' => 'Staff LPPM 1', 'email' => 'staff.lppm1@itbss.ac.id',
+        $staff = User::firstOrCreate(
+            ['email' => 'staff.lppm1@itbss.ac.id'],
+            [
+'nama' => 'Staff LPPM 1',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Staff LPPM', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '10002', 'no_hp' => '081234567892',
             'prodi_id' => $prodiBD->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $dosen = User::create([
-            'nama' => 'Dosen E2E', 'email' => 'dosen.e2e@itbss.ac.id',
+        $dosen = User::firstOrCreate(
+            ['email' => 'dosen.e2e@itbss.ac.id'],
+            [
+'nama' => 'Dosen E2E',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '20001', 'no_hp' => '081234567894',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $reviewer = User::create([
-            'nama' => 'Reviewer E2E', 'email' => 'reviewer.e2e@itbss.ac.id',
+        $reviewer = User::firstOrCreate(
+            ['email' => 'reviewer.e2e@itbss.ac.id'],
+            [
+'nama' => 'Reviewer E2E',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Reviewer', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '30001', 'no_hp' => '081234567897',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $reviewer2 = User::create([
-            'nama' => 'Reviewer E2E 2', 'email' => 'reviewer2.e2e@itbss.ac.id',
+        $reviewer2 = User::firstOrCreate(
+            ['email' => 'reviewer2.e2e@itbss.ac.id'],
+            [
+'nama' => 'Reviewer E2E 2',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Reviewer', 'status' => 'Aktif', 'gender' => 'P',
             'nidn' => '30004', 'no_hp' => '081234567800',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $reviewer3 = User::create([
-            'nama' => 'Reviewer E2E 3', 'email' => 'reviewer3.e2e@itbss.ac.id',
+        $reviewer3 = User::firstOrCreate(
+            ['email' => 'reviewer3.e2e@itbss.ac.id'],
+            [
+'nama' => 'Reviewer E2E 3',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Reviewer', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '30005', 'no_hp' => '081234567801',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
         // ── Settings ──
         Settings::create([
             'kepala_lppm' => $ketua->id,
-            'kriteria_penilaian' => json_encode([
+            'kriteria_penilaian' => [
                 ['kriteria' => 'Kesesuaian Tema', 'bobot' => 30],
                 ['kriteria' => 'Metodologi', 'bobot' => 30],
                 ['kriteria' => 'Timeline', 'bobot' => 20],
                 ['kriteria' => 'Anggaran', 'bobot' => 20],
-            ]),
-            'list_kesesuaian_tema' => json_encode(['SDGs', 'Teknologi', 'Kesehatan']),
+            ],
+            'list_kesesuaian_tema' => ['SDGs', 'Teknologi', 'Kesehatan'],
             'ignore_kegiatan_dates' => true,
         ]);
 
         // ── Skema ──
-        $skema = Skema::create([
-            'nama_skema' => 'Penelitian Dosen Tetap 2026',
-            'tahun_ajaran' => '2025/2026',
-            'status' => 'Aktif',
-        ]);
+        $skema = Skema::firstOrCreate(
+            ['nama_skema' => 'Penelitian Dosen Tetap 2026', 'tahun_ajaran' => '2025/2026'],
+            ['status' => 'Aktif']
+        );
 
         // ════════════════════════════════════════════════════════════
         // KEGIATAN PENGAJUAN — Proposal Stages (Penelitian)
         // ════════════════════════════════════════════════════════════
-        $kegPenPenerimaan = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'PENERIMAAN_PROPOSAL', 'nama_kegiatan' => 'Penerimaan Proposal Penelitian',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPenSeleksi = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'SELEKSI_PROPOSAL', 'nama_kegiatan' => 'Seleksi Proposal Penelitian',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPenSK = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'PENGUMUMAN_SURAT_TUGAS', 'nama_kegiatan' => 'Pengumuman Surat Tugas Penelitian',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
+        $kegPenPenerimaan = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'PENERIMAAN_PROPOSAL'],
+            [
+            'nama_kegiatan' => 'Penerimaan Proposal Penelitian',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPenSeleksi = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'SELEKSI_PROPOSAL'],
+            [
+            'nama_kegiatan' => 'Seleksi Proposal Penelitian',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPenSK = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'PENGUMUMAN_SURAT_TUGAS'],
+            [
+            'nama_kegiatan' => 'Pengumuman Surat Tugas Penelitian',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
 
         // ════════════════════════════════════════════════════════════
         // KEGIATAN PENGAJUAN — Proposal Stages (PkM)
         // ════════════════════════════════════════════════════════════
-        $kegPkmPenerimaan = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM',
-            'kode_kegiatan' => 'PENERIMAAN_PROPOSAL', 'nama_kegiatan' => 'Penerimaan Proposal PkM',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPkmSeleksi = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM',
-            'kode_kegiatan' => 'SELEKSI_PROPOSAL', 'nama_kegiatan' => 'Seleksi Proposal PkM',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPkmSK = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM',
-            'kode_kegiatan' => 'PENGUMUMAN_SURAT_TUGAS', 'nama_kegiatan' => 'Pengumuman Surat Tugas PkM',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
+        $kegPkmPenerimaan = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM', 'kode_kegiatan' => 'PENERIMAAN_PROPOSAL'],
+            [
+            'nama_kegiatan' => 'Penerimaan Proposal PkM',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPkmSeleksi = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM', 'kode_kegiatan' => 'SELEKSI_PROPOSAL'],
+            [
+            'nama_kegiatan' => 'Seleksi Proposal PkM',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPkmSK = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM', 'kode_kegiatan' => 'PENGUMUMAN_SURAT_TUGAS'],
+            [
+            'nama_kegiatan' => 'Pengumuman Surat Tugas PkM',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
 
         // ════════════════════════════════════════════════════════════
         // KEGIATAN PENGAJUAN — Laporan Stages (Penelitian, Ganjil)
         // ════════════════════════════════════════════════════════════
-        $kegPenGanProses = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'PROSES_PENELITIAN_GANJIL', 'nama_kegiatan' => 'Proses Penelitian Ganjil',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPenGanPub = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'PUBLIKASI_GANJIL', 'nama_kegiatan' => 'Publikasi Ganjil',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPenGanDis = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'DISEMINASI_GANJIL', 'nama_kegiatan' => 'Diseminasi Ganjil',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPenGanClaim = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'CLAIM_DANA_GANJIL', 'nama_kegiatan' => 'Claim Dana Ganjil',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPenGanLuaran = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'LUARAN_PENELITIAN', 'nama_kegiatan' => 'Luaran Penelitian',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
+        $kegPenGanProses = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'PROSES_PENELITIAN_GANJIL'],
+            [
+            'nama_kegiatan' => 'Proses Penelitian Ganjil',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPenGanPub = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'PUBLIKASI_GANJIL'],
+            [
+            'nama_kegiatan' => 'Publikasi Ganjil',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPenGanDis = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'DISEMINASI_GANJIL'],
+            [
+            'nama_kegiatan' => 'Diseminasi Ganjil',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPenGanClaim = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'CLAIM_DANA_GANJIL'],
+            [
+            'nama_kegiatan' => 'Claim Dana Ganjil',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPenGanLuaran = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'LUARAN_PENELITIAN'],
+            [
+            'nama_kegiatan' => 'Luaran Penelitian',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
 
         // ════════════════════════════════════════════════════════════
         // KEGIATAN PENGAJUAN — Laporan Stages (Penelitian, Genap)
         // ════════════════════════════════════════════════════════════
-        $kegPenGenProses = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'PROSES_PENELITIAN_GENAP', 'nama_kegiatan' => 'Proses Penelitian Genap',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPenGenPub = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'PUBLIKASI_GENAP', 'nama_kegiatan' => 'Publikasi Genap',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPenGenDis = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'DISEMINASI_GENAP', 'nama_kegiatan' => 'Diseminasi Genap',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPenGenClaim = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'CLAIM_DANA_GENAP', 'nama_kegiatan' => 'Claim Dana Genap',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
+        $kegPenGenProses = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'PROSES_PENELITIAN_GENAP'],
+            [
+            'nama_kegiatan' => 'Proses Penelitian Genap',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPenGenPub = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'PUBLIKASI_GENAP'],
+            [
+            'nama_kegiatan' => 'Publikasi Genap',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPenGenDis = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'DISEMINASI_GENAP'],
+            [
+            'nama_kegiatan' => 'Diseminasi Genap',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPenGenClaim = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'CLAIM_DANA_GENAP'],
+            [
+            'nama_kegiatan' => 'Claim Dana Genap',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
 
         // ════════════════════════════════════════════════════════════
         // KEGIATAN PENGAJUAN — Laporan Stages (PkM, Ganjil)
         // ════════════════════════════════════════════════════════════
-        $kegPkmGanClaim = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM',
-            'kode_kegiatan' => 'CLAIM_DANA_GANJIL', 'nama_kegiatan' => 'Claim Dana PkM Ganjil',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPkmGanProses = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM',
-            'kode_kegiatan' => 'PROSES_PKM_GANJIL', 'nama_kegiatan' => 'Proses PkM Ganjil',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPkmGanPub = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM',
-            'kode_kegiatan' => 'PUBLIKASI_GANJIL', 'nama_kegiatan' => 'Publikasi PkM Ganjil',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPkmGanReturn = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM',
-            'kode_kegiatan' => 'PENGEMBALIAN_DANA_GANJIL', 'nama_kegiatan' => 'Pengembalian Dana PkM Ganjil',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
-        $kegPkmGanDis = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM',
-            'kode_kegiatan' => 'DISEMINASI_GANJIL', 'nama_kegiatan' => 'Diseminasi PkM Ganjil',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
+        $kegPkmGanClaim = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM', 'kode_kegiatan' => 'CLAIM_DANA_GANJIL'],
+            [
+            'nama_kegiatan' => 'Claim Dana PkM Ganjil',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPkmGanProses = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM', 'kode_kegiatan' => 'PROSES_PKM_GANJIL'],
+            [
+            'nama_kegiatan' => 'Proses PkM Ganjil',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPkmGanPub = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM', 'kode_kegiatan' => 'PUBLIKASI_GANJIL'],
+            [
+            'nama_kegiatan' => 'Publikasi PkM Ganjil',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPkmGanReturn = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM', 'kode_kegiatan' => 'PENGEMBALIAN_DANA_GANJIL'],
+            [
+            'nama_kegiatan' => 'Pengembalian Dana PkM Ganjil',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
+        $kegPkmGanDis = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM', 'kode_kegiatan' => 'DISEMINASI_GANJIL'],
+            [
+            'nama_kegiatan' => 'Diseminasi PkM Ganjil',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
 
         // ════════════════════════════════════════════════════════════
         // PROPOSALS — Penelitian (owned by Dosen E2E)
@@ -285,7 +382,7 @@ class E2EDosenSeeder extends Seeder
             'topik_penelitian' => 'Cloud Computing', 'bidang_ilmu' => 'TI',
             'fokus_sdg' => 'SDGs 9', 'status' => 'Menunggu review dari Ketua LPPM',
             'kegiatan_id' => $kegPenSeleksi->kegiatan_id,
-            'tgl_pengajuan' => '2026-08-03',
+            'staff_seleksi_approved' => true, 'tgl_pengajuan' => '2026-08-03',
             'rencana_luaran' => 'Jurnal Internasional', 'institusi_mitra' => '-',
         ]));
 
@@ -294,7 +391,7 @@ class E2EDosenSeeder extends Seeder
             'topik_penelitian' => 'Pertanian', 'bidang_ilmu' => 'Pertanian',
             'fokus_sdg' => 'SDGs 2', 'status' => 'Menunggu review Staff LPPM',
             'kegiatan_id' => $kegPenSeleksi->kegiatan_id,
-            'ketua_seleksi_approved' => true, 'tgl_pengajuan' => '2026-08-04',
+            'tgl_pengajuan' => '2026-08-04',
             'rencana_luaran' => 'Jurnal Nasional', 'institusi_mitra' => '-',
         ]));
 
@@ -720,13 +817,16 @@ class E2EDosenSeeder extends Seeder
         // ════════════════════════════════════════════════════════════
         // DOSEN B — For isolation test (DS-ISO-001)
         // ════════════════════════════════════════════════════════════
-        $dosenB = User::create([
-            'nama' => 'Dosen B E2E', 'email' => 'dosen.b@itbss.ac.id',
+        $dosenB = User::firstOrCreate(
+            ['email' => 'dosen.b@itbss.ac.id'],
+            [
+'nama' => 'Dosen B E2E',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'P',
             'nidn' => '20002', 'no_hp' => '081234567895',
             'prodi_id' => $prodiBD->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
         Proposal::create(array_merge($baseProposal, [
             'judul' => 'DS-ISO-B: Milik Dosen B',

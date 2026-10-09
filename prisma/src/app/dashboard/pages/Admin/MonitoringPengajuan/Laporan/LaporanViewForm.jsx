@@ -23,6 +23,8 @@ export default function LaporanViewForm({ close, data, onKetuaApproveRejection, 
 
     if (!data) return null
 
+    console.log("[LaporanViewForm] data:", JSON.stringify(data.penugasan, null, 2))
+
     const detail = data.detail || {}
     const members = data.laporan_members || []
     const realisasiAnggaran = data.realisasi_anggaran || []
@@ -271,21 +273,19 @@ export default function LaporanViewForm({ close, data, onKetuaApproveRejection, 
                                 <h3 className="font-medium text-sm text-gray-700 border-b pb-1 mb-2">Status Persetujuan Diseminasi</h3>
                                 <div className="flex flex-col gap-2">
                                     <div className="flex items-center gap-2">
-                                        <Badge color={detail.ketua_diseminasi_approved ? 'green' : 'gray'} size="sm">
-                                            Ketua LPPM: {detail.ketua_diseminasi_approved ? "✓ Disetujui" : "○ Belum Disetujui"}
-                                        </Badge>
                                         <Badge
                                             color={detail.staff_diseminasi_approved ? 'green' : detail.has_pending_diseminasi_rejection ? 'red' : 'gray'}
                                             size="sm"
                                         >
-                                            Staff LPPM: {detail.has_pending_diseminasi_rejection
-                                                ? "✗ Menolak (Menunggu Persetujuan Ketua)"
-                                                : detail.staff_diseminasi_approved ? "✓ Disetujui" : "○ Belum Disetujui"}
+                                            Staff LPPM: {detail.staff_diseminasi_approved ? "✓ Disetujui" : "○ Belum Disetujui"}
+                                        </Badge>
+                                        <Badge color={detail.ketua_diseminasi_approved ? 'green' : 'gray'} size="sm">
+                                            Ketua LPPM: {detail.ketua_diseminasi_approved ? "✓ Disetujui" : "○ Belum Disetujui"}
                                         </Badge>
                                     </div>
                                     {data.status && (
                                         <Badge
-                                            color={LAPORAN_STATUS_COLORS[data.status]?.color || 'gray'}
+                                            color={LAPORAN_STATUS_COLORS[data.status?.toLowerCase()]?.color || 'gray'}
                                             size="sm"
                                             className="w-fit"
                                         >
@@ -343,19 +343,29 @@ export default function LaporanViewForm({ close, data, onKetuaApproveRejection, 
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        {p.review.kriteria_penilaian.map((k, ki) => (
-                                                                            <tr key={ki} className="border-b border-gray-50 last:border-0">
-                                                                                <td className="px-3 py-1.5 text-gray-700">{k.kriteria}</td>
-                                                                                <td className="px-3 py-1.5 text-center text-gray-500">{k.bobot}</td>
-                                                                                <td className="px-3 py-1.5 text-center text-gray-500">{k.skor}</td>
-                                                                                <td className="px-3 py-1.5 text-center font-medium text-gray-700">{k.nilai ?? (k.bobot * k.skor)}</td>
-                                                                            </tr>
-                                                                        ))}
+                                                                        {p.review.kriteria_penilaian.map((k, ki) => {
+                                                                            const bobot = Number(k.bobot) || 0
+                                                                            const skor = Number(k.skor) || 0
+                                                                            const nilai = Number(k.nilai) || (bobot * skor / 100)
+                                                                            return (
+                                                                                <tr key={ki} className="border-b border-gray-50 last:border-0">
+                                                                                    <td className="px-3 py-1.5 text-gray-700">{k.kriteria}</td>
+                                                                                    <td className="px-3 py-1.5 text-center text-gray-500">{bobot}</td>
+                                                                                    <td className="px-3 py-1.5 text-center text-gray-500">{skor}</td>
+                                                                                    <td className="px-3 py-1.5 text-center font-medium text-gray-700">{nilai}</td>
+                                                                                </tr>
+                                                                            )
+                                                                        })}
                                                                     </tbody>
                                                                     <tfoot>
                                                                         <tr className="bg-gray-50 border-t border-gray-200">
                                                                             <td colSpan={3} className="px-3 py-1.5 font-medium text-gray-700 text-right">Total</td>
-                                                                            <td className="px-3 py-1.5 text-center font-bold text-gray-700">{p.review.kriteria_penilaian.reduce((sum, k) => sum + (k.nilai ?? (k.bobot * k.skor)), 0)}</td>
+                                                                            <td className="px-3 py-1.5 text-center font-bold text-gray-700">{Number(p.review.kriteria_penilaian.reduce((sum, k) => {
+                                                                                const bobot = Number(k.bobot) || 0
+                                                                                const skor = Number(k.skor) || 0
+                                                                                const nilai = Number(k.nilai) || (bobot * skor / 100)
+                                                                                return sum + nilai
+                                                                            }, 0)).toFixed(2)}</td>
                                                                         </tr>
                                                                     </tfoot>
                                                                 </table>

@@ -261,7 +261,7 @@ class ThesisScreenshotSeeder extends Seeder
             'topik_penelitian' => 'Pertanian Cerdas', 'bidang_ilmu' => 'Teknologi Informasi',
             'fokus_sdg' => 'SDGs 2 - Tanpa Kelaparan',
             'status' => 'Menunggu review dari Ketua LPPM', 'kegiatan_id' => $kegSeleksi->kegiatan_id,
-            'tgl_pengajuan' => '2026-08-03',
+            'staff_seleksi_approved' => true, 'tgl_pengajuan' => '2026-08-03',
             'rencana_luaran' => 'Jurnal Internasional', 'institusi_mitra' => '-',
         ]));
 
@@ -271,7 +271,7 @@ class ThesisScreenshotSeeder extends Seeder
             'topik_penelitian' => 'Akuakultur', 'bidang_ilmu' => 'Teknik Kelautan',
             'fokus_sdg' => 'SDGs 14 - Ekosistem Laut',
             'status' => 'Menunggu review Staff LPPM', 'kegiatan_id' => $kegSeleksi->kegiatan_id,
-            'ketua_seleksi_approved' => true, 'tgl_pengajuan' => '2026-08-04',
+            'tgl_pengajuan' => '2026-08-04',
             'rencana_luaran' => 'Jurnal Nasional', 'institusi_mitra' => '-',
         ]));
 

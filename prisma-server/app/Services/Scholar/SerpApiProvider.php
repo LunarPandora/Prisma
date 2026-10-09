@@ -25,7 +25,13 @@ class SerpApiProvider implements GoogleScholarProvider
         $allPublications = [];
         $page = 0;
 
+        Log::info('Scholar: Starting author profile fetch', [
+            'author_id' => $scholarAuthorId,
+        ]);
+
         while (true) {
+            $requestStart = microtime(true);
+
             $response = Http::timeout($this->timeout)
                 ->get('https://serpapi.com/search.json', [
                     'engine'      => 'google_scholar_author',
@@ -35,10 +41,14 @@ class SerpApiProvider implements GoogleScholarProvider
                     'num'         => 10,
                 ]);
 
+            $elapsed = round((microtime(true) - $requestStart) * 1000);
+
             if ($response->failed()) {
-                Log::error('SerpApi request failed', [
+                Log::error('Scholar: SerpApi request failed', [
                     'author_id' => $scholarAuthorId,
+                    'page'      => $page,
                     'status'    => $response->status(),
+                    'elapsed_ms'=> $elapsed,
                 ]);
                 throw new \RuntimeException('SerpApi request failed with status ' . $response->status());
             }
@@ -53,12 +63,26 @@ class SerpApiProvider implements GoogleScholarProvider
             $publications = $this->normalizePublications($data);
             $allPublications = array_merge($allPublications, $publications);
 
+            Log::info('Scholar: Fetched page', [
+                'author_id'       => $scholarAuthorId,
+                'page'            => $page,
+                'pubs_on_page'    => count($publications),
+                'total_pubs_so_far'=> count($allPublications),
+                'elapsed_ms'      => $elapsed,
+            ]);
+
             $next = $data['serpapi_pagination']['next'] ?? null;
             if (empty($next) || count($publications) === 0 || $page >= 9) {
                 break;
             }
             $page++;
         }
+
+        Log::info('Scholar: Author profile fetch complete', [
+            'author_id'       => $scholarAuthorId,
+            'total_publications'=> count($allPublications),
+            'pages_fetched'   => $page + 1,
+        ]);
 
         return [
             'profile'          => $profile ?? $this->emptyProfile(),

@@ -12,6 +12,7 @@ export default function Modal({
     children,
     footer,
     maxWidth = "max-w-lg",
+    maxHeight = "max-h-[90vh]",
     zIndex = "z-50",
     closeOnBackdrop = true,
 }) {
@@ -30,7 +31,7 @@ export default function Modal({
                         animate={{ opacity: 1, scale: 1, filter: "blur(0)" }}
                         exit={{ opacity: 0, scale: 1.05, filter: "blur(3px)" }}
                         transition={{ duration: 0.2 }}
-                        className={`bg-white rounded-xl w-full ${maxWidth} max-h-[90vh] flex flex-col drop-shadow-lg will-change-auto`}
+                        className={`bg-white rounded-xl w-full ${maxWidth} ${maxHeight} flex flex-col drop-shadow-lg will-change-auto`}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-start justify-between p-6 pb-0">

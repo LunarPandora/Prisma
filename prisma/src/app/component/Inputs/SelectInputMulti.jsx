@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { motion, AnimatePresence } from "framer-motion"
 import { faCheck, faChevronDown, faRefresh, faX } from "@fortawesome/free-solid-svg-icons"
@@ -30,6 +31,7 @@ export default function SelectInputMulti({
 
     const [loading, setLoading] = useState(!!dataSource)
     const [inputValue, setInputValue] = useState("")
+    const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 })
 
     const containerRef = useRef(null)
     const ignoreClickRef = useRef(false)
@@ -191,6 +193,11 @@ export default function SelectInputMulti({
                     onFocus={() => {
                         setSuggestionWindow(true)
 
+                        if (containerRef.current) {
+                            const rect = containerRef.current.getBoundingClientRect()
+                            setDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width })
+                        }
+
                         if (!inputValue) {
                             setInputValue("") // ensures clean typing state
                             setFilteredOptions(usableOptions)
@@ -220,16 +227,18 @@ export default function SelectInputMulti({
                 <FontAwesomeIcon icon={faChevronDown} className={`text-gray-500 text-md duration-200 transition-transform ease-in-out ${suggestionWindow ? 'rotate-180' : 'rotate-0'}`} />
             </div>
 
-            <AnimatePresence>
-                {suggestionWindow && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, translateY: -10 }}
-                        animate={{ opacity: 1, scale: 1, translateY: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, translateY: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute border border-gray-200 bg-white min-w-50 shadow-lg/10 mt-1.5 rounded-lg w-full h-fit z-20"
-                    >
-                        <div className="overflow-y-scroll h-full p-2 max-h-32">
+            {createPortal(
+                <AnimatePresence>
+                    {suggestionWindow && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.15 }}
+                            className="fixed border border-gray-200 bg-white shadow-lg rounded-lg z-[9999]"
+                            style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
+                        >
+                            <div className="overflow-y-auto p-2 max-h-48">
                             { loading ? (
                                 <div className="p-2 text-sm text-gray-500">
                                     Loading...
@@ -310,15 +319,13 @@ export default function SelectInputMulti({
                         </div>
 
                         {!disabled && 
-                            <div className={`flex gap-1 items-center justify-end border-t-[0.5px] border-t-gray-300 p-2`}>
-                                <div className={`flex items-center gap-1 relative transition-all duration-200 ${selectedValues.length > 0 ? 'scale-100 opacity-100 ease-[cubic-bezier(0.34,1.56,0.64,1)]' : 'scale-0 opacity-0 ease-out]'} `}>
+                            <div className="flex gap-1 items-center justify-end border-t border-gray-300 p-2">
+                                <div className={`flex items-center gap-1 relative transition-all duration-200 ${selectedValues.length > 0 ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}>
                                     <button 
                                         onMouseDown={(e) => {
                                             e.preventDefault()
                                             ignoreClickRef.current = true
-
                                             onReset?.()
-
                                             setInputValue("")
                                             setHighlightedIndex(0)
                                         }}
@@ -338,9 +345,11 @@ export default function SelectInputMulti({
                                 )}
                             </div>
                         }
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </div>
     )
 }

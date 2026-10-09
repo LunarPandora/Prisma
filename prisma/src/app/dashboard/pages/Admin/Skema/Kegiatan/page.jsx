@@ -151,10 +151,9 @@ export default function Kegiatan({ skema, onBack }) {
                     onContextRequest={(e, type, data, source) =>
                         openMenu(e, type, data, source)
                     }
-                    maxActions={1}
                     onRefresh={refreshTable}
                     rowActions={[
-                        { icon: faEdit, text: "Edit", action: handleEdit, enabled: access.update }
+                        { icon: faEdit, text: "Edit kegiatan pengajuan", action: handleEdit, enabled: access.update }
                     ]}
                     columns={[
                         {

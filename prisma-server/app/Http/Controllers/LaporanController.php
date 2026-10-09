@@ -60,6 +60,13 @@ class LaporanController extends Controller
             $query->whereNull('completed_at');
         }
 
+        if ($request->boolean('pending_staff')) {
+            $query->whereIn('status', [
+                'Menunggu review Staff LPPM',
+                'Menunggu review Admin',
+            ]);
+        }
+
         if ($request->filled('kode_kegiatan')) {
             $kodes = is_array($request->kode_kegiatan)
                 ? $request->kode_kegiatan
@@ -67,6 +74,23 @@ class LaporanController extends Controller
             $query->whereHas('kegiatan', function ($q) use ($kodes) {
                 $q->whereIn('kode_kegiatan', $kodes);
             });
+
+            $hasClaimDana = collect($kodes)->contains(fn($k) => str_starts_with($k, 'CLAIM_DANA'));
+            $hasPengembalianDana = collect($kodes)->contains(fn($k) => str_starts_with($k, 'PENGEMBALIAN_DANA'));
+
+            if ($hasClaimDana) {
+                $query->where(function ($q) {
+                    $q->whereNull('claim_dana_status')
+                      ->orWhere('claim_dana_status', '!=', 'Selesai');
+                });
+            }
+
+            if ($hasPengembalianDana) {
+                $query->where(function ($q) {
+                    $q->whereNull('pengembalian_dana_status')
+                      ->orWhere('pengembalian_dana_status', '!=', 'Selesai');
+                });
+            }
         }
 
         if ($request->filled('skema_id')) {
@@ -107,11 +131,31 @@ class LaporanController extends Controller
             $query->with(['penugasan.reviewer']);
         }
 
-        return LaporanDosenResource::collection(
-            $query
-                ->orderByDesc('tgl_mulai')
-                ->paginate($request->get('per_page', 10))
-        );
+        if ($request->boolean('count_only')) {
+            return ApiResponse::success(['total' => $query->count()]);
+        }
+
+        $perPage = $request->get('per_page', 10);
+        $orderedQuery = $query->orderByDesc('updated_at');
+
+        $highlightPage = null;
+        if ($request->filled('highlight_id')) {
+            $allIds = (clone $orderedQuery)->pluck('laporan_id')->toArray();
+            $pos = array_search((int) $request->highlight_id, array_map('intval', $allIds));
+            if ($pos !== false) {
+                $highlightPage = intdiv($pos, $perPage) + 1;
+            }
+        }
+
+        $page = $highlightPage ?? $request->input('page', 1);
+
+        $paginator = $orderedQuery->paginate($perPage, ['*'], 'page', $page);
+
+        $resource = LaporanDosenResource::collection($paginator);
+
+        $resource->additional['highlight_page'] = $highlightPage;
+
+        return $resource;
     }
 
     public function show(Request $request, $id)
@@ -174,8 +218,8 @@ class LaporanController extends Controller
             $ganjilKode = $ganjil?->kodeKegiatan();
             $genapKode = $genap?->kodeKegiatan();
 
-            $isGanjilLocked = !KegiatanStage::isOpen($ganjil, $ganjilKode);
-            $isGenapLocked = !KegiatanStage::isOpen($genap, $genapKode);
+            $isGanjilLocked = $ganjil ? !KegiatanStage::isOpen($ganjil, $ganjilKode) : true;
+            $isGenapLocked = $genap ? !KegiatanStage::isOpen($genap, $genapKode) : true;
 
             $result = [
                 'proposal' => null,
@@ -921,9 +965,13 @@ class LaporanController extends Controller
 
             if ($validated['decision'] === 'accept') {
 
+                $staffAlreadyApproved = $laporan->staff_diseminasi_approved;
+
                 $laporan->update([
                     'ketua_diseminasi_approved' => true,
-                    'status' => 'Menunggu review Staff LPPM',
+                    'status' => $staffAlreadyApproved
+                        ? 'Menuggu penugasan Reviewer'
+                        : 'Menunggu review dari Ketua LPPM',
                     'catatan' => $validated['catatan'] ?? $laporan->catatan,
                 ]);
 
@@ -931,7 +979,9 @@ class LaporanController extends Controller
                     role: 'Staff LPPM',
                     type: 'laporan.diseminasi.ketua_approved',
                     title: 'Diseminasi disetujui oleh Ketua',
-                    message: "Diseminasi laporan \"{$laporan->judul_penelitian}\" telah disetujui oleh Ketua LPPM.",
+                    message: $staffAlreadyApproved
+                        ? "Diseminasi laporan \"{$laporan->judul_penelitian}\" telah disetujui oleh Ketua LPPM. Siap untuk penugasan reviewer."
+                        : "Diseminasi laporan \"{$laporan->judul_penelitian}\" telah disetujui oleh Ketua LPPM.",
                     data: ['laporan_id' => $laporan->laporan_id],
                     actionUrl: \App\Helpers\NotificationUrl::forRole('Staff LPPM', 'laporan', $laporan->kegiatan->skema_id, $laporan->laporan_id, \App\Helpers\NotificationUrl::laporanTab($laporan->kegiatan->kode_kegiatan), $laporan->jenis_penelitian),
                     key: "laporan.diseminasi.ketua_approved.{$laporan->laporan_id}",

@@ -14,39 +14,55 @@ const colorMap = {
     cyan: "bg-cyan-50 text-cyan-600",
 }
 
-export default function SummaryCard({ icon, label, value, subtitle, color = "blue", href, actionLabel, description }) {
+export default function SummaryCard({ icon, label, value, subtitle, color = "blue", href, actionLabel, description, onCtaClick }) {
     const router = useRouter()
     const colorClasses = colorMap[color] || colorMap.blue
     const isPending = value > 0
 
+    const handleClick = () => {
+        if (onCtaClick) {
+            onCtaClick()
+        } else if (href && isPending) {
+            router.push(href)
+        }
+    }
+
     return (
         <div
-            className={`bg-white rounded-xl border p-4 flex items-start gap-3 transition-all ${
-                href && isPending
+            className={`bg-white rounded-xl border p-4 flex flex-col gap-2 transition-all ${
+                (onCtaClick || (href && isPending))
                     ? "border-gray-200 hover:border-blue-300 hover:shadow-sm cursor-pointer"
                     : "border-gray-200"
             } ${!isPending ? "opacity-60" : ""}`}
-            onClick={href && isPending ? () => router.push(href) : undefined}
+            onClick={handleClick}
         >
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${colorClasses}`}>
-                <FontAwesomeIcon icon={icon} className="text-lg" />
+            <div className="flex items-center gap-2.5">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${colorClasses}`}>
+                    <FontAwesomeIcon icon={icon} className="text-base" />
+                </div>
+                <p className="text-xs font-medium text-gray-500 truncate">{label}</p>
             </div>
-            <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 truncate">{label}</p>
-                <p className={`text-2xl font-bold mt-0.5 ${isPending ? "text-gray-800" : "text-gray-400"}`}>{value}</p>
-                {subtitle && (
-                    <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
-                )}
-                {description && (
-                    <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-1">{description}</p>
-                )}
-                {href && isPending && actionLabel && (
-                    <p className="text-xs font-medium text-blue-600 mt-1.5 flex items-center gap-1">
+
+            <p className={`text-3xl font-bold leading-none ${isPending ? "text-gray-900" : "text-gray-300"}`}>
+                {value}
+            </p>
+
+            {subtitle && (
+                <p className="text-xs text-gray-400 leading-snug">{subtitle}</p>
+            )}
+
+            {description && (
+                <p className="text-[11px] text-gray-400 line-clamp-1">{description}</p>
+            )}
+
+            {isPending && actionLabel && (
+                <div className="mt-auto pt-1">
+                    <span className="text-xs font-medium text-blue-600 flex items-center gap-1.5 transition-all">
                         {actionLabel}
                         <FontAwesomeIcon icon={faArrowRight} className="text-[10px]" />
-                    </p>
-                )}
-            </div>
+                    </span>
+                </div>
+            )}
         </div>
     )
 }

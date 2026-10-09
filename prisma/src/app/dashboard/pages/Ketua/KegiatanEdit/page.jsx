@@ -134,7 +134,6 @@ export default function KetuaKegiatanEdit() {
             <CustomTable
                 fetchMethod={(query) => fetchKegiatanEditRequests(query).then(res => res.data)}
                 refreshKey={refreshKey}
-                maxActions={2}
                 onRefresh={refreshTable}
                 rowActions={[
                     {

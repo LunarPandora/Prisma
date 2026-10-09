@@ -26,6 +26,7 @@ export default function LogbookFormDosen({
         judul: "",
         deskripsi: "",
         tgl_kegiatan: "",
+        tgl_kegiatan_end: "",
         lampiran_drive_url: "",
     }
 
@@ -43,6 +44,7 @@ export default function LogbookFormDosen({
                 judul: editData.judul || "",
                 deskripsi: editData.deskripsi || "",
                 tgl_kegiatan: editData.tgl_kegiatan || "",
+                tgl_kegiatan_end: editData.tgl_kegiatan_end || "",
                 lampiran_drive_url: editData.lampiran_drive_url || "",
             })
         }
@@ -116,12 +118,16 @@ export default function LogbookFormDosen({
                 />
 
                 <DatePicker
-                    date={form.tgl_kegiatan ? { from: new Date(form.tgl_kegiatan), to: new Date(form.tgl_kegiatan) } : null}
+                    date={form.tgl_kegiatan ? { from: new Date(form.tgl_kegiatan), to: form.tgl_kegiatan_end ? new Date(form.tgl_kegiatan_end) : new Date(form.tgl_kegiatan) } : null}
                     tag="Tanggal Kegiatan"
                     placeholder="Pilih tanggal"
                     icon={faCalendar}
-                    mode="single"
-                    dateUpdate={(date) => setForm(prev => ({ ...prev, tgl_kegiatan: date?.from ? formatToPHPDate(date.from) : "" }))}
+                    mode="range"
+                    dateUpdate={(date) => setForm(prev => ({
+                        ...prev,
+                        tgl_kegiatan: date?.from ? formatToPHPDate(date.from) : "",
+                        tgl_kegiatan_end: date?.to && date.to !== date.from ? formatToPHPDate(date.to) : "",
+                    }))}
                 />
 
                 <div className="col-span-2">

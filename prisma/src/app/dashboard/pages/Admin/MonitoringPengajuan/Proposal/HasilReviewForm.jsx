@@ -14,7 +14,6 @@ import { generatePDFPreview, getPDFPageCount, getFileMeta, estimateReadingTime }
 import Button from "@/app/component/Inputs/Button"
 import Modal from "@/app/component/Modal/Modal"
 import UserTag from "@/app/component/Tags/UserTag"
-import { targetPublikasiOptions } from "@/app/component/Libraries/options/selections"
 import { useUserStore } from "@/app/stores/useUserStore"
 
 export default function FormHasilReview({ refresh, close, data, triggerTolak, triggerTerima }){
@@ -296,25 +295,21 @@ export default function FormHasilReview({ refresh, close, data, triggerTolak, tr
                             className={'col-span-2'}
                         />
 
-                        <SelectInput
-                            name="target_publikasi_gan"
-                            value={form.target_publikasi_gan}
-                            onChange={handleChange}
-                            options={targetPublikasiOptions}
-                            icon={faBook}
-                            disabled={true}
-                            placeholder="Target publikasi (ganjil)"
-                        />
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs text-gray-500">
+                                <FontAwesomeIcon icon={faBook} className="mr-1" />
+                                Target Publikasi (Ganjil)
+                            </span>
+                            <span className="text-sm text-gray-800">{form.target_publikasi_gan || "—"}</span>
+                        </div>
 
-                        <SelectInput
-                            name="target_publikasi_gen"
-                            value={form.target_publikasi_gen}
-                            onChange={handleChange}
-                            options={targetPublikasiOptions}
-                            icon={faBook}
-                            disabled={true}
-                            placeholder="Target publikasi (genap)"
-                        />
+                        <div className="flex flex-col gap-1">
+                            <span className="text-xs text-gray-500">
+                                <FontAwesomeIcon icon={faBook} className="mr-1" />
+                                Target Publikasi (Genap)
+                            </span>
+                            <span className="text-sm text-gray-800">{form.target_publikasi_gen || "—"}</span>
+                        </div>
                     </div>
 
                     <div className="flex flex-col gap-y-2 h-fit w-full border border-gray-300 rounded-md p-5 bg-white col-span-2">

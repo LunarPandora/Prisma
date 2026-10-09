@@ -27,60 +27,81 @@ class E2EReviewerSeeder extends Seeder
         $prodiBD = Prodi::create(['nama_prodi' => 'Bisnis Digital']);
 
         // ── Users ──
-        $superadmin = User::create([
-            'nama' => 'Superadmin', 'email' => 'superadmin@itbss.ac.id',
+        $superadmin = User::firstOrCreate(
+            ['email' => 'superadmin@itbss.ac.id'],
+            [
+'nama' => 'Superadmin',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Superadmin', 'status' => 'Aktif', 'gender' => 'L',
             'no_hp' => '081234567890', 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $ketua = User::create([
-            'nama' => 'Ketua LPPM', 'email' => 'ketua.lppm@itbss.ac.id',
+        $ketua = User::firstOrCreate(
+            ['email' => 'ketua.lppm@itbss.ac.id'],
+            [
+'nama' => 'Ketua LPPM',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Ketua LPPM', 'status' => 'Aktif', 'gender' => 'P',
             'nidn' => '10001', 'no_hp' => '081234567891',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $staff = User::create([
-            'nama' => 'Staff LPPM 1', 'email' => 'staff.lppm1@itbss.ac.id',
+        $staff = User::firstOrCreate(
+            ['email' => 'staff.lppm1@itbss.ac.id'],
+            [
+'nama' => 'Staff LPPM 1',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Staff LPPM', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '10002', 'no_hp' => '081234567892',
             'prodi_id' => $prodiBD->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $dosen = User::create([
-            'nama' => 'Dosen E2E', 'email' => 'dosen.e2e@itbss.ac.id',
+        $dosen = User::firstOrCreate(
+            ['email' => 'dosen.e2e@itbss.ac.id'],
+            [
+'nama' => 'Dosen E2E',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '20001', 'no_hp' => '081234567894',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $reviewerE2E = User::create([
-            'nama' => 'Reviewer E2E', 'email' => 'reviewer.e2e@itbss.ac.id',
+        $reviewerE2E = User::firstOrCreate(
+            ['email' => 'reviewer.e2e@itbss.ac.id'],
+            [
+'nama' => 'Reviewer E2E',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Reviewer', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '30001', 'no_hp' => '081234567897',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $reviewerB = User::create([
-            'nama' => 'Reviewer B', 'email' => 'reviewer.b@itbss.ac.id',
+        $reviewerB = User::firstOrCreate(
+            ['email' => 'reviewer.b@itbss.ac.id'],
+            [
+'nama' => 'Reviewer B',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Reviewer', 'status' => 'Aktif', 'gender' => 'P',
             'nidn' => '30002', 'no_hp' => '081234567898',
             'prodi_id' => $prodiBD->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $reviewerC = User::create([
-            'nama' => 'Reviewer C', 'email' => 'reviewer.c@itbss.ac.id',
+        $reviewerC = User::firstOrCreate(
+            ['email' => 'reviewer.c@itbss.ac.id'],
+            [
+'nama' => 'Reviewer C',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Reviewer', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '30003', 'no_hp' => '081234567899',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
         // ── Settings ──
         Settings::create([
@@ -96,43 +117,58 @@ class E2EReviewerSeeder extends Seeder
         ]);
 
         // ── Skema ──
-        $skema = Skema::create([
-            'nama_skema' => 'Penelitian Dosen Tetap 2026',
-            'tahun_ajaran' => '2025/2026',
-            'status' => 'Aktif',
-        ]);
+        $skema = Skema::firstOrCreate(
+            ['nama_skema' => 'Penelitian Dosen Tetap 2026', 'tahun_ajaran' => '2025/2026'],
+            ['status' => 'Aktif']
+        );
 
         // ── Kegiatan Pengajuan — Penelitian ──
-        $kegPenSeleksi = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'SELEKSI_PROPOSAL', 'nama_kegiatan' => 'Seleksi Proposal Penelitian',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
+        $kegPenSeleksi = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'SELEKSI_PROPOSAL'],
+            [
+            'nama_kegiatan' => 'Seleksi Proposal Penelitian',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
 
         // ── Kegiatan Pengajuan — PkM ──
-        $kegPkmSeleksi = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM',
-            'kode_kegiatan' => 'SELEKSI_PROPOSAL', 'nama_kegiatan' => 'Seleksi Proposal PkM',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
+        $kegPkmSeleksi = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM', 'kode_kegiatan' => 'SELEKSI_PROPOSAL'],
+            [
+            'nama_kegiatan' => 'Seleksi Proposal PkM',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
 
         // ── Kegiatan Pengajuan — Laporan (Penelitian) ──
-        $kegPenGanProses = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian',
-            'kode_kegiatan' => 'PROSES_PENELITIAN_GANJIL', 'nama_kegiatan' => 'Proses Penelitian Ganjil',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
+        $kegPenGanProses = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'Penelitian', 'kode_kegiatan' => 'PROSES_PENELITIAN_GANJIL'],
+            [
+            'nama_kegiatan' => 'Proses Penelitian Ganjil',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
 
         // ── Kegiatan Pengajuan — Laporan (PkM) ──
-        $kegPkmGanProses = KegiatanPengajuan::create([
-            'skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM',
-            'kode_kegiatan' => 'PROSES_PENELITIAN_GANJIL', 'nama_kegiatan' => 'Proses PkM Ganjil',
-            'tgl_mulai' => '2026-01-01', 'tgl_selesai' => '2026-12-31',
-            'status' => 'Terbuka', 'manual_status_override' => true,
-        ]);
+        $kegPkmGanProses = KegiatanPengajuan::firstOrCreate(
+            ['skema_id' => $skema->skema_id, 'jenis_penelitian' => 'PkM', 'kode_kegiatan' => 'PROSES_PENELITIAN_GANJIL'],
+            [
+            'nama_kegiatan' => 'Proses PkM Ganjil',
+            'tgl_mulai' => '2026-01-01',
+            'tgl_selesai' => '2026-12-31',
+            'status' => 'Terbuka',
+            'manual_status_override' => true,
+            ]
+        );
 
         // ════════════════════════════════════════════════════════════
         // BASE PROPOSAL TEMPLATE

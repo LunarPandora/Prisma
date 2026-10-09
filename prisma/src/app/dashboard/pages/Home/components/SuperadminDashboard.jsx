@@ -5,9 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faUsers, faBook, faFileLines, faBuilding } from "@fortawesome/free-solid-svg-icons"
 import SummaryCard from "./SummaryCard"
 import DashboardSection from "./DashboardSection"
-import ActionQueue from "./ActionQueue"
 import Button from "@/app/component/Inputs/Button"
-import { SummaryCardSkeleton, ActionQueueSkeleton } from "./LoadingSkeleton"
+import { SummaryCardSkeleton } from "./LoadingSkeleton"
 import { getSuperadminDashboard } from "@/app/component/Libraries/api/dashboard"
 
 export default function SuperadminDashboard() {
@@ -95,20 +94,6 @@ export default function SuperadminDashboard() {
                     </div>
                 </DashboardSection>
             </div>
-
-            <DashboardSection title="Proposal Terbaru">
-                <ActionQueue
-                    items={(data?.recent_proposals || []).map((p) => ({
-                        type: "proposal",
-                        id: p.proposal_id,
-                        title: p.judul,
-                        status: p.status,
-                        owner: p.dosen,
-                        action_url: "/dashboard?module=users",
-                    }))}
-                    emptyMessage="Belum ada proposal"
-                />
-            </DashboardSection>
         </div>
     )
 }

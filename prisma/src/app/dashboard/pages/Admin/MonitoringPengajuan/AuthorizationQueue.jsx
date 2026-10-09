@@ -5,11 +5,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faShieldHalved, faCheck, faTimes, faSpinner } from "@fortawesome/free-solid-svg-icons"
 import { getAuthorizationRequests, authorizeRequest } from "@/app/component/Libraries/api/authorization"
 import { formatIndonesianDate } from "@/app/component/Libraries/utils/date"
+import Alert from "@/app/component/Alert/Alert"
 
 export default function AuthorizationQueue({ user }) {
     const [requests, setRequests] = useState([])
     const [loading, setLoading] = useState(true)
     const [processingId, setProcessingId] = useState(null)
+    const [confirmData, setConfirmData] = useState(null)
 
     const isKetua = user?.role === "Ketua LPPM"
 
@@ -39,7 +41,12 @@ export default function AuthorizationQueue({ user }) {
             console.error("Failed to authorize:", err)
         } finally {
             setProcessingId(null)
+            setConfirmData(null)
         }
+    }
+
+    function openConfirm(requestId, action, label) {
+        setConfirmData({ requestId, action, label })
     }
 
     if (!isKetua || loading || requests.length === 0) return null
@@ -56,6 +63,7 @@ export default function AuthorizationQueue({ user }) {
     }
 
     return (
+        <>
         <div className="bg-white rounded-xl border border-amber-200 shadow-sm overflow-hidden">
             <div className="bg-amber-50 border-b border-amber-200 px-6 py-4 flex items-center gap-3">
                 <div className="bg-amber-100 p-2 rounded-full">
@@ -94,7 +102,7 @@ export default function AuthorizationQueue({ user }) {
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                             <button
-                                onClick={() => handleAuthorize(req.id, "reject", "Ditolak oleh Ketua LPPM")}
+                                onClick={() => openConfirm(req.id, "reject", actionLabels[req.action] || req.action)}
                                 disabled={processingId === req.id}
                                 className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                                 title="Tolak"
@@ -106,7 +114,7 @@ export default function AuthorizationQueue({ user }) {
                                 )}
                             </button>
                             <button
-                                onClick={() => handleAuthorize(req.id, "approve")}
+                                onClick={() => openConfirm(req.id, "approve", actionLabels[req.action] || req.action)}
                                 disabled={processingId === req.id}
                                 className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
                                 title="Setujui"
@@ -122,5 +130,26 @@ export default function AuthorizationQueue({ user }) {
                 ))}
             </div>
         </div>
+
+        {confirmData && (
+            <Alert
+                alertType={confirmData?.action === "approve" ? "warning" : "danger"}
+                title={confirmData?.action === "approve" ? "Setujui Permintaan" : "Tolak Permintaan"}
+                msg={`Anda yakin ingin ${confirmData?.action === "approve" ? "menyetujui" : "menolak"} permintaan: ${confirmData?.label || ""}?`}
+                onCancel={() => setConfirmData(null)}
+                onAccept={() => {
+                    handleAuthorize(
+                        confirmData.requestId,
+                        confirmData.action,
+                        confirmData.action === "reject" ? "Ditolak oleh Ketua LPPM" : ""
+                    )
+                }}
+                acceptText={confirmData?.action === "approve" ? "Setujui" : "Tolak"}
+                isConfirmation={true}
+                withBackground={true}
+                loading={processingId === confirmData?.requestId}
+            />
+        )}
+        </>
     )
 }

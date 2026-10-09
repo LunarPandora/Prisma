@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, captureApiEvidence } from '../helpers/evidence'
+import { type Page } from '@playwright/test'
 import { FRONTEND_URL, waitForDashboard, navigateToModule } from '../helpers/navigation'
 
 const BACKEND = process.env.E2E_BACKEND_URL || 'http://localhost:8000'
@@ -244,6 +245,7 @@ test.describe('Dosen — Mutations', () => {
     expect(hasIsolation).toBeTruthy()
 
     const listResult = await apiGetAuthed(page, '/proposal?per_page=50')
+    await captureApiEvidence(page, 'DS-ISO-001', 'GET', '/proposal?per_page=50')
     expect(listResult.status).toBe(200)
     const proposals = extractList(listResult.body)
     const dosenBProposal = proposals.find((p: any) =>

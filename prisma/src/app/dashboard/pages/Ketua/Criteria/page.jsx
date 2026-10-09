@@ -290,7 +290,6 @@ export default function KetuaCriteria() {
                         onContextRequest={(e, type, data, source) =>
                             openMenu(e, type, data, source)
                         }
-                        maxActions={3}
                         onRefresh={refreshTable}
                         rowActions={[
                             { icon: faEdit, text: "Edit", action: handleEdit, enabled: access.update },

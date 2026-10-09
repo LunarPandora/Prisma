@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+
+# Playwright / test generated output
+test-results/artifacts/
+test-results/thesis-artifacts/
+test-results/html/data/
+test-results/html/trace/
+test-results/*.log
+prisma/tests/playwright-rbb/test-results/
+prisma/playwright-report/
+prisma/playwright-report.zip
+prisma/test-results/
+prisma/tests/test-results/
+prisma/tests/playwright-rbb/playwright-report/
+
+# Regenerated evidence / screenshot artifacts (recreate with evidence-run.sh
+# and the screenshots Playwright project)
+prisma/evidence/
+prisma/evidence.zip
+prisma/screenshots/
+prisma/screenshots.zip

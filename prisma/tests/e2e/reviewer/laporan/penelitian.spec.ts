@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../../helpers/evidence'
 import { FRONTEND_URL } from '../../helpers/navigation'
 
 test.describe('Reviewer - Laporan Review', () => {

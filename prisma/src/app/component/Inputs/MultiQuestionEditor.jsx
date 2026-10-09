@@ -100,7 +100,7 @@ export default function MultiQuestionEditor({
 
                         <input
                             type="text"
-                            value={item.question}
+                            value={item.question || ""}
                             onChange={(e) =>
                                 updateQuestion(index, e.target.value)
                             }

@@ -91,10 +91,9 @@ export default function KategoriPublikasi(){
                 onContextRequest={(e, type, data, source) =>
                     openMenu(e, type, data, source)
                 }
-                maxActions={2}
                 rowActions={[
-                    { icon: faEdit, text: "Edit", action: handleEdit, enabled: access?.update },
-                    { icon: faTrashCan, text: "Hapus", action: handleRemove, enabled: access?.delete, danger: true }
+                    { icon: faEdit, text: "Edit kategori publikasi", action: handleEdit, enabled: access?.update },
+                    { icon: faTrashCan, text: "Hapus kategori publikasi", action: handleRemove, enabled: access?.delete, danger: true }
                 ]}
                 onRefresh={refreshTable}
                 columns={[

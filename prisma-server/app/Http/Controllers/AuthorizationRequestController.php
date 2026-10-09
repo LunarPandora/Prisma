@@ -187,15 +187,15 @@ class AuthorizationRequestController extends Controller
 
                 if ($resource instanceof Laporan) {
                     $resource->update([
-                        'status' => 'Menunggu review Staff LPPM',
+                        'status' => 'Menunggu review dari Ketua LPPM',
                         'catatan' => $validated['review_note'] ?? $authRequest->reason ?? '-',
-                        'ketua_diseminasi_approved' => true,
+                        'ketua_diseminasi_approved' => false,
                         'staff_diseminasi_approved' => false,
                     ]);
                 }
             }
 
-            // For return_seleksi rejection: update Proposal status so Staff can verify again
+            // For return_seleksi rejection: update Proposal status so Ketua can review directly
             if ($validated['action'] === 'reject' && $authRequest->action === 'return_seleksi') {
                 $rawType = $authRequest->requestable_type;
                 $modelClass = str_starts_with($rawType, 'App\\Models\\')
@@ -205,9 +205,9 @@ class AuthorizationRequestController extends Controller
 
                 if ($resource instanceof Proposal) {
                     $resource->update([
-                        'status' => 'Menunggu review Staff LPPM',
+                        'status' => 'Menunggu review dari Ketua LPPM',
                         'catatan' => $validated['review_note'] ?? $authRequest->reason ?? '-',
-                        'ketua_seleksi_approved' => true,
+                        'ketua_seleksi_approved' => false,
                         'staff_seleksi_approved' => false,
                     ]);
                 }

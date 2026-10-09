@@ -51,7 +51,6 @@ export const createStaffLaporanMenus = ({
             icon: faCheck,
             enabled: (r) =>
                 access?.update &&
-                r.detail?.ketua_diseminasi_approved &&
                 !r.detail?.staff_diseminasi_approved &&
                 !r.detail?.has_pending_diseminasi_rejection,
         }),
@@ -59,7 +58,6 @@ export const createStaffLaporanMenus = ({
             icon: faTimes,
             enabled: (r) =>
                 access?.update &&
-                r.detail?.ketua_diseminasi_approved &&
                 !r.detail?.staff_diseminasi_approved &&
                 !r.detail?.has_pending_diseminasi_rejection,
             danger: true,
@@ -68,8 +66,8 @@ export const createStaffLaporanMenus = ({
             icon: faUserPlus,
             enabled: (r) =>
                 access?.update &&
-                r.detail?.ketua_diseminasi_approved &&
                 r.detail?.staff_diseminasi_approved &&
+                r.detail?.ketua_diseminasi_approved &&
                 r.status !== "Menunggu keputusan Ketua" &&
                 (!r.penugasan || r.penugasan.length === 0 ||
                     r.penugasan.every(p => p.status_review === "Belum direview")),

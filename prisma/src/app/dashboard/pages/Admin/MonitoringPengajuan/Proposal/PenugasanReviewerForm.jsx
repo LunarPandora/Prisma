@@ -12,11 +12,13 @@ import UserTag from "@/app/component/Tags/UserTag"
 import { assignReviewer, confirmAssignment } from "@/app/component/Libraries/api/penugasan"
 import Button from "@/app/component/Inputs/Button"
 import Modal from "@/app/component/Modal/Modal"
+import Alert from "@/app/component/Alert/Alert"
 import { useFormSubmission } from "@/app/component/Libraries/hooks/useFormSubmission"
 
 export default function FormPenugasanReviewer({ refresh, close, data }){
     const [selected, setSelected] = useState([])
     const [initialSelected, setInitialSelected] = useState([])
+    const [showConfirmSubmit, setShowConfirmSubmit] = useState(false)
 
     const user = useUserStore(state => state.user)
 
@@ -107,6 +109,7 @@ export default function FormPenugasanReviewer({ refresh, close, data }){
     const exactlyThree = selected.length === 3
 
     return (
+        <>
         <Modal
             isOpen={true}
             onClose={() => close('this')}
@@ -121,7 +124,7 @@ export default function FormPenugasanReviewer({ refresh, close, data }){
                     <Button onClick={() => setReviewer()} variant="secondary" disabled={!hasChanges() || loading || !exactlyThree}>
                         Simpan sebagai draft
                     </Button> 
-                    <Button onClick={() => confirmPenugasan()} disabled={loading || !exactlyThree}>
+                    <Button onClick={() => setShowConfirmSubmit(true)} disabled={loading || !exactlyThree}>
                         {loading ? "Menyimpan..." : "Submit penugasan"}
                     </Button>
                 </div>
@@ -179,5 +182,22 @@ export default function FormPenugasanReviewer({ refresh, close, data }){
                 </div>
             </div>
         </Modal>
+
+        {showConfirmSubmit && (
+            <Alert
+                alertType="warning"
+                title="Submit Penugasan Reviewer"
+                msg={`Anda yakin ingin menugaskan ${selected.length} reviewer ini? Penugasan akan dikirim dan reviewer akan diberitahu.`}
+                onCancel={() => setShowConfirmSubmit(false)}
+                onAccept={() => {
+                    confirmPenugasan()
+                }}
+                acceptText="Submit"
+                isConfirmation={true}
+                withBackground={true}
+                loading={loading}
+            />
+        )}
+        </>
     )
 }

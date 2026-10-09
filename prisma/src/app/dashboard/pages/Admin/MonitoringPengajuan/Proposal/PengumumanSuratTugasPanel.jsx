@@ -23,7 +23,7 @@ export default function PengumumanSuratTugasPanel({
 
     function fetchAcceptedProposals(query = '') {
         return getProposal(
-            `skema_id=${skema.skema_id}&status=Proposal+Diterima&${query}`
+            `skema_id=${skema.skema_id}&status=Proposal+Diterima&per_page=10&${query}`
         )
     }
 

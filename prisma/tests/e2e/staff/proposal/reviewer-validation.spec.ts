@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, captureApiEvidence } from '../../helpers/evidence'
 import { FRONTEND_URL } from '../../helpers/navigation'
 
 const BACKEND = process.env.E2E_BACKEND_URL || 'http://localhost:8000'
@@ -76,6 +76,9 @@ test.describe('Reviewer Assignment Validation', () => {
       reviewable_id: proposalId,
       reviewer_id: [100, 200],
     })
+    await captureApiEvidence(page, 'ST-REV-API-VAL-001', 'POST', '/penugasan/assign', {
+      reviewable_type: 'App\\Models\\Proposal', reviewable_id: proposalId, reviewer_id: [100, 200],
+    })
 
     const is2Rejected =
       assign2Result.status >= 400 ||
@@ -94,6 +97,9 @@ test.describe('Reviewer Assignment Validation', () => {
       reviewable_id: proposalId,
       reviewer_id: [100, 200, 300, 400],
     })
+    await captureApiEvidence(page, 'ST-REV-API-VAL-001-4', 'POST', '/penugasan/assign', {
+      reviewable_type: 'App\\Models\\Proposal', reviewable_id: proposalId, reviewer_id: [100, 200, 300, 400],
+    })
 
     const is4Rejected =
       assign4Result.status >= 400 ||
@@ -107,6 +113,9 @@ test.describe('Reviewer Assignment Validation', () => {
       reviewable_type: 'App\\Models\\Proposal',
       reviewable_id: proposalId,
       reviewer_id: [100, 100, 200],
+    })
+    await captureApiEvidence(page, 'ST-REV-API-VAL-001-DUP', 'POST', '/penugasan/assign', {
+      reviewable_type: 'App\\Models\\Proposal', reviewable_id: proposalId, reviewer_id: [100, 100, 200],
     })
 
     const isDupRejected =

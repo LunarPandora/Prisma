@@ -10,14 +10,17 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: 1,
   reporter: [
-    ['html', { open: 'never', outputFolder: '../test-results/html' }],
     ['list'],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['json', { outputFile: 'test-results/results.json' }],
   ],
   use: {
     baseURL: FRONTEND_URL,
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 2,
     trace: 'retain-on-failure',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    screenshot: 'on',
+    video: 'off',
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
   },
@@ -105,6 +108,13 @@ export default defineConfig({
     {
       name: 'shared-guest',
       testMatch: /shared\/.*\.spec\.ts$/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'screenshots',
+      testMatch: /screenshots\/.*\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
       },

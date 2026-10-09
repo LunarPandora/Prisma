@@ -145,7 +145,10 @@ export default function NotificationHistory() {
             }
         }
         if (notification.action_url) {
-            router.push(notification.action_url)
+            const url = notification.action_url.startsWith("/dashboard")
+                ? notification.action_url
+                : "/dashboard"
+            router.push(url)
         }
     }
 

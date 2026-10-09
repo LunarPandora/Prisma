@@ -74,6 +74,7 @@ class LaporanDosenResource extends JsonResource
             'kode_kegiatan' => $this->kegiatan?->kode_kegiatan,
             'nama_kegiatan' => $this->kegiatan?->nama_kegiatan,
             'skema'        => $this->kegiatan?->skema?->nama_skema,
+            'skema_id'     => $this->kegiatan?->skema_id,
 
             'ketua' => $proposal?->user ? [
                 'id'         => $proposal->user->id,

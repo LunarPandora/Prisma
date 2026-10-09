@@ -102,6 +102,7 @@ class ProposalAdminResource extends JsonResource
             'kegiatan_id'                    => $this->kegiatan?->kegiatan_id,
             'nama_kegiatan'                  => $this->kegiatan?->nama_kegiatan,
             'kode_kegiatan'                  => $this->kegiatan?->kode_kegiatan,
+            'skema_id'                       => $this->kegiatan?->skema_id,
 
             'kriteria_penilaian'            => $this->kriteria_penilaian ?? [],
             'kriteria_kesesuaian_tema'      => $this->kriteria_kesesuaian_tema ?? [],

@@ -15,12 +15,14 @@ class LogbookPengerjaan extends Model
         'judul',
         'deskripsi',
         'tgl_kegiatan',
+        'tgl_kegiatan_end',
         'lampiran_drive_id',
         'lampiran_drive_url',
     ];
 
     protected $casts = [
         'tgl_kegiatan' => 'date',
+        'tgl_kegiatan_end' => 'date',
     ];
 
     /*

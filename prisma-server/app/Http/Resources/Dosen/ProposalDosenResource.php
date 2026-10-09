@@ -47,12 +47,12 @@ class ProposalDosenResource extends JsonResource
             'institusi_mitra'               => $this->institusi_mitra,
             'tgl_pengajuan'                 => $this->tgl_pengajuan,
             'skema'                         => $this->skema,
+            'skema_id'                      => $this->kegiatan?->skema?->skema_id,
             'sumber_skema'                  => $this->sumber_skema,
 
             'dokumen'                       => $this->dokumen,
 
-            // 'nama_dosen'             => $this->dosen?->user?->nama,
-            // 'dosen_id'               => $this->dosen_id,
+            'dosen'                         => $this->user,
 
             'member_dosen_proposal'         => $this->memberDosenProposal->map(function ($item) {
                                                     return [

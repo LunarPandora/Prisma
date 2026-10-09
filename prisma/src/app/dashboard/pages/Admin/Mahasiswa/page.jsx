@@ -91,12 +91,11 @@ export default function Mahasiswa(){
                 fetchMethod={fetchMahasiswa}
                 refreshKey={refreshKey}
                 onContextRequest={(e, type, data, source) => openMenu(e, type, data, source)}
-                maxActions={2}
                 onRefresh={refreshTable}
-                rowActions={[
-                    { icon: faEdit, text: "Edit", action: handleEdit, enabled: access.update },
-                    { icon: faTrashCan, text: "Hapus", action: handleRemove, enabled: access.delete, danger: true }
-                ]}
+                    rowActions={[
+                        { icon: faEdit, text: "Edit mahasiswa", action: handleEdit, enabled: access.update },
+                        { icon: faTrashCan, text: "Hapus mahasiswa", action: handleRemove, enabled: access.delete, danger: true }
+                    ]}
                 headerRight={
                     access.create && (
                         <Button onClick={handleAdd} icon={faPlus}>

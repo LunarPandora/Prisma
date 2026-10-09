@@ -7,10 +7,10 @@ import { faX, faPlus, faCalendarDays, faStickyNote, faFileLines, faEdit, faExcla
 
 import Button from "@/app/component/Inputs/Button"
 import Modal from "@/app/component/Modal/Modal"
-import ConfirmModal from "@/app/component/Modal/ConfirmModal"
+import Alert from "@/app/component/Alert/Alert"
 import FileManager from "@/app/component/FileManager/FileManager"
 import { getLogbook, addLogbook, deleteLogbook, getLaporanDocuments, replaceDocument } from "@/app/component/Libraries/api/logbook"
-import { formatIndonesianDate } from "@/app/component/Libraries/utils/date"
+import { formatIndonesianDate, formatIndonesianRange } from "@/app/component/Libraries/utils/date"
 import LogbookFormDosen from "./LogbookForm"
 
 export default function LogbookViewDosen({
@@ -126,7 +126,7 @@ export default function LogbookViewDosen({
                 onClose={close}
                 title="Logbook Progress"
                 subtitle={`${logbooks.length} entri · ${documents ? "Dokumen tersedia" : "Memuat dokumen..."}`}
-                maxWidth="max-w-4xl"
+                maxWidth="max-w-5xl"
                 closeOnBackdrop={false}
                 footer={
                 !readOnly ? (
@@ -181,7 +181,7 @@ export default function LogbookViewDosen({
                                                 <span className="font-medium text-sm">{item.judul}</span>
                                             </td>
                                             <td className="px-4 py-2.5 text-gray-500 text-sm">
-                                                {item.tgl_kegiatan ? formatIndonesianDate(item.tgl_kegiatan) : "-"}
+                                                {item.tgl_kegiatan ? formatIndonesianRange({ from: item.tgl_kegiatan, to: item.tgl_kegiatan_end || item.tgl_kegiatan }) : "-"}
                                             </td>
                                             <td className="px-4 py-2.5 text-gray-500 text-sm max-w-[200px]">
                                                 <span className="line-clamp-2">{item.deskripsi}</span>
@@ -267,16 +267,19 @@ export default function LogbookViewDosen({
             </Modal>
 
             {/* DELETE CONFIRMATION */}
-            <ConfirmModal
-                isOpen={showDeleteModal}
-                onClose={() => setShowDeleteModal(false)}
-                onConfirm={confirmDelete}
-                title="Hapus Logbook"
-                message="Apakah Anda yakin ingin menghapus logbook ini?"
-                confirmText="Hapus"
-                variant="danger"
-                loading={loadingForm}
-            />
+            {showDeleteModal && (
+                <Alert
+                    alertType="danger"
+                    title="Hapus Logbook"
+                    msg="Apakah Anda yakin ingin menghapus logbook ini?"
+                    onCancel={() => setShowDeleteModal(false)}
+                    onAccept={() => { setShowDeleteModal(false); confirmDelete() }}
+                    acceptText="Hapus"
+                    isConfirmation={true}
+                    withBackground={true}
+                    loading={loadingForm}
+                />
+            )}
         </>
     )
 }

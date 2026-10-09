@@ -13,6 +13,7 @@ export default function Alert({
     acceptText = "Ya",
     isConfirmation = false,
     isAlert = false,
+    loading = false,
 }){
 
     let bgColor, textColor, icon;
@@ -94,11 +95,11 @@ export default function Alert({
                     <p className="pb-5">{ msg }</p>
 
                     <div className="flex gap-2">
-                        <button onClick={() => onCancel()} className="w-1/2 border-2 border-foreground/90 hover:border-foreground text-foreground bg-transparent hover:bg-foreground hover:text-white text-lg px-5 py-2 rounded-lg font-medium mt-1 transition-colors duration-300 ease-in-out cursor-pointer">
+                        <button onClick={() => onCancel()} disabled={loading} className="w-1/2 border-2 border-foreground/90 hover:border-foreground text-foreground bg-transparent hover:bg-foreground hover:text-white text-lg px-5 py-2 rounded-lg font-medium mt-1 transition-colors duration-300 ease-in-out cursor-pointer disabled:opacity-50">
                             { cancelText }
                         </button>
-                        <button onClick={() => onAccept()} className="w-1/2 bg-foreground/90 hover:bg-foreground text-white text-lg px-5 py-2 rounded-lg font-medium mt-1 transition-colors duration-300 ease-in-out cursor-pointer">
-                            { acceptText }
+                        <button onClick={() => onAccept()} disabled={loading} className="w-1/2 bg-foreground/90 hover:bg-foreground text-white text-lg px-5 py-2 rounded-lg font-medium mt-1 transition-colors duration-300 ease-in-out cursor-pointer disabled:opacity-50">
+                            { loading ? "Memproses..." : acceptText }
                         </button>
                     </div>
                 </div>

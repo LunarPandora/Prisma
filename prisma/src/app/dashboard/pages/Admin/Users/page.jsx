@@ -89,12 +89,11 @@ export default function Users(){
                 fetchMethod={getUsers}
                 refreshKey={refreshKey}
                 onContextRequest={(e, type, data, source) => openMenu(e, type, data, source)}
-                maxActions={2}
                 onRefresh={refreshTable}
-                rowActions={[
-                    { icon: faEdit, text: "Edit", action: handleEdit, enabled: access.update },
-                    { icon: faTrashCan, text: "Hapus", action: handleRemove, enabled: access.delete, danger: true }
-                ]}
+                    rowActions={[
+                        { icon: faEdit, text: "Edit user", action: handleEdit, enabled: access.update },
+                        { icon: faTrashCan, text: "Hapus user", action: handleRemove, enabled: access.delete, danger: true }
+                    ]}
                 columns={[
                     {
                         header: "Nama", 

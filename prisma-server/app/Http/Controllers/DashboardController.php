@@ -168,6 +168,7 @@ class DashboardController extends Controller
 
         $laporanMenunggu = Laporan::whereIn('status', [
             'Menunggu review Admin',
+            'Menunggu review dari Ketua LPPM',
             'Menunggu keputusan Ketua',
         ])->count();
 
@@ -246,23 +247,20 @@ class DashboardController extends Controller
             ->where('status_review', 'Belum direview')
             ->count();
 
-        $sedangDikerjakan = PenugasanReviewer::where('user_id', $userId)
-            ->where('status_review', 'Belum direview')
-            ->count();
-
         $reviewSelesai = PenugasanReviewer::where('user_id', $userId)
             ->where('status_review', 'Telah direview')
             ->count();
 
         $reviewQueue = $this->getReviewerQueue($userId);
+        $completedQueue = $this->getReviewerCompletedQueue($userId);
 
         return ApiResponse::success([
             'summary' => [
                 'menunggu_review' => $menungguReview,
-                'sedang_dikerjakan' => $sedangDikerjakan,
                 'review_selesai' => $reviewSelesai,
             ],
             'review_queue' => $reviewQueue,
+            'completed_queue' => $completedQueue,
         ]);
     }
 
@@ -282,7 +280,6 @@ class DashboardController extends Controller
                 'Menunggu penugasan reviewer',
             ])
             ->latest()
-            ->take(5)
             ->get();
 
         foreach ($proposals as $p) {
@@ -311,7 +308,6 @@ class DashboardController extends Controller
                 'Menunggu review Admin',
             ])
             ->latest('tgl_mulai')
-            ->take(5)
             ->get();
 
         foreach ($laporan as $l) {
@@ -347,7 +343,6 @@ class DashboardController extends Controller
                   ->orWhere('pengembalian_dana_status', 'Menunggu konfirmasi admin');
             })
             ->latest('updated_at')
-            ->take(5)
             ->get();
 
         foreach ($dana as $d) {
@@ -374,9 +369,7 @@ class DashboardController extends Controller
             ];
         }
 
-        usort($items, fn($a, $b) => strtotime($b['created_at'] ?? 'now') - strtotime($a['created_at'] ?? 'now'));
-
-        return array_slice($items, 0, 10);
+        return $items;
     }
 
     private function getKetuaActionQueue(): array
@@ -411,6 +404,7 @@ class DashboardController extends Controller
         $laporan = Laporan::with(['proposal' => fn($q) => $q->withTrashed(), 'proposal.user' => fn($q) => $q->withTrashed(), 'proposal.kegiatan.skema'])
             ->whereIn('status', [
                 'Menunggu review Admin',
+                'Menunggu review dari Ketua LPPM',
                 'Menunggu keputusan Ketua',
             ])
             ->latest('tgl_mulai')
@@ -627,95 +621,194 @@ class DashboardController extends Controller
 
     private function getDosenWorkflowProgress(int $userId): array
     {
-        $latestProposal = Proposal::with(['kegiatan' => fn($q) => $q->withTrashed(), 'laporan' => fn($q) => $q->with(['kegiatan' => fn($q2) => $q2->withTrashed()])])
+        $proposals = Proposal::with([
+                'kegiatan' => fn($q) => $q->withTrashed()->with('skema'),
+                'laporan' => fn($q) => $q->with(['kegiatan' => fn($q2) => $q2->withTrashed()]),
+            ])
             ->where('user_id', $userId)
-            ->latest()
-            ->first();
+            ->get();
 
-        if (!$latestProposal) {
+        if ($proposals->isEmpty()) {
             return [];
         }
 
-        $stages = [
-            'Pengajuan' => in_array($latestProposal->status, ['Draf', 'Menunggu proposal untuk diupload']),
-            'Seleksi' => in_array($latestProposal->status, ['Menunggu review dari Ketua LPPM', 'Menunggu review Staff LPPM', 'Menunggu penugasan reviewer', 'Menunggu review', 'Menunggu persetujuan Ketua LPPM']),
-            'Surat Tugas' => $latestProposal->status === 'Proposal Diterima',
+        $PROPOSAL_DONE_STATUSES = [
+            'Draf' => false,
+            'Menunggu proposal untuk diupload' => false,
+            'Menunggu review dari Ketua LPPM' => false,
+            'Menunggu review Staff LPPM' => false,
+            'Menunggu penugasan reviewer' => false,
+            'Menunggu review' => false,
+            'Menunggu persetujuan Ketua LPPM' => false,
+            'Proposal Diterima' => true,
+            'Ditolak' => true,
         ];
 
-        foreach ($latestProposal->laporan as $laporan) {
-            $label = 'Laporan ' . $laporan->semester;
-            $stages[$label] = !in_array($laporan->status, ['Belum dimulai', 'Dalam pengerjaan']);
-        }
+        $items = [];
 
-        // Determine the current stage and build the navigation URL
-        $firstIncomplete = null;
-        foreach ($stages as $label => $done) {
-            if (!$done) {
-                $firstIncomplete = $label;
-                break;
+        foreach ($proposals as $proposal) {
+            $kegiatan = $proposal->kegiatan;
+            if (!$kegiatan) continue;
+
+            $skema = $kegiatan->skema;
+            $skemaName = $skema->nama_skema ?? '-';
+            $jenis = $proposal->jenis_penelitian ?? $kegiatan->jenis_penelitian ?? 'Penelitian';
+
+            // ── Proposal stages ──
+            $proposalDone = $PROPOSAL_DONE_STATUSES[$proposal->status] ?? false;
+            $proposalStage = match(true) {
+                in_array($proposal->status, ['Draf', 'Menunggu proposal untuk diupload']) => 'Pengajuan',
+                in_array($proposal->status, ['Menunggu review dari Ketua LPPM', 'Menunggu review Staff LPPM', 'Menunggu penugasan reviewer', 'Menunggu review', 'Menunggu persetujuan Ketua LPPM']) => 'Seleksi',
+                $proposal->status === 'Proposal Diterima' => 'Selesai',
+                $proposal->status === 'Ditolak' => 'Ditolak',
+                default => 'Pengajuan',
+            };
+
+            // ── Laporan stages ──
+            $isProposalAccepted = $proposal->status === 'Proposal Diterima';
+            $laporanStages = [];
+            foreach ($proposal->laporan as $laporan) {
+                // A laporan can only be "done" if the proposal has been accepted (Surat Tugas issued)
+                $isDone = $isProposalAccepted && !in_array($laporan->status, ['Belum dimulai', 'Dalam pengerjaan']);
+                $currentKode = $laporan->kegiatan->kode_kegiatan ?? null;
+
+                $laporanStages[] = [
+                    'semester' => $laporan->semester,
+                    'status' => $laporan->status,
+                    'done' => $isDone,
+                    'kode_kegiatan' => $currentKode,
+                    'laporan_id' => $laporan->laporan_id,
+                ];
             }
-        }
-        // If all stages are done, the current stage is the last one
-        if ($firstIncomplete === null) {
-            $lastKey = array_key_last($stages);
-            $firstIncomplete = $lastKey;
-        }
 
-        // Build navigation URL based on current stage
-        $skemaId = $latestProposal->kegiatan->skema->skema_id ?? null;
-        $navigationUrl = '/dashboard?module=dosenmonitoringprogress';
+            // ── Determine current state for this kegiatan ──
+            $currentState = null;
+            $currentDescription = null;
+            $navigationUrl = '/dashboard?module=dosenmonitoringprogress';
 
-        if ($firstIncomplete === 'Pengajuan' || $firstIncomplete === 'Seleksi' || $firstIncomplete === 'Surat Tugas') {
-            // Current stage is a proposal stage
-            if ($skemaId) {
-                $navigationUrl .= '&skema_id=' . $skemaId . '&view=proposal';
-            }
-            $navigationUrl .= '&proposal_id=' . $latestProposal->proposal_id;
-            // Determine the correct tab based on status
-            if ($latestProposal->status === 'Proposal Diterima') {
-                $navigationUrl .= '&tab=PENGUMUMAN_SURAT_TUGAS';
-            } elseif (in_array($latestProposal->status, ['Menunggu review dari Ketua LPPM', 'Menunggu review Staff LPPM', 'Menunggu penugasan reviewer', 'Menunggu review', 'Menunggu persetujuan Ketua LPPM'])) {
-                $navigationUrl .= '&tab=SELEKSI_PROPOSAL';
+            if ($proposal->status === 'Ditolak') {
+                // Proposal rejected — don't show laporans
+                $currentState = 'Ditolak';
+                $currentDescription = 'Proposal ditolak.';
+                if ($skema) {
+                    $navigationUrl .= '&skema_id=' . $skema->skema_id . '&view=proposal';
+                }
+                $navigationUrl .= '&proposal_id=' . $proposal->proposal_id . '&tab=PENERIMAAN_PROPOSAL';
+                if ($jenis) {
+                    $navigationUrl .= '&jenis=' . urlencode($jenis);
+                }
+            } elseif (!$proposalDone && $proposalStage !== 'Selesai') {
+                // Proposal still in progress
+                $currentState = $proposalStage;
+                $currentDescription = match($proposalStage) {
+                    'Pengajuan' => 'Proposal sedang dalam proses pengajuan.',
+                    'Seleksi' => 'Menunggu review dan seleksi proposal.',
+                    default => null,
+                };
+                if ($skema) {
+                    $navigationUrl .= '&skema_id=' . $skema->skema_id . '&view=proposal';
+                }
+                $navigationUrl .= '&proposal_id=' . $proposal->proposal_id;
+                $tab = match(true) {
+                    in_array($proposal->status, ['Menunggu review dari Ketua LPPM', 'Menunggu review Staff LPPM', 'Menunggu penugasan reviewer', 'Menunggu review', 'Menunggu persetujuan Ketua LPPM']) => 'SELEKSI_PROPOSAL',
+                    default => 'PENERIMAAN_PROPOSAL',
+                };
+                $navigationUrl .= '&tab=' . $tab;
+                if ($jenis) {
+                    $navigationUrl .= '&jenis=' . urlencode($jenis);
+                }
             } else {
-                $navigationUrl .= '&tab=PENERIMAAN_PROPOSAL';
-            }
-            if ($latestProposal->jenis_penelitian) {
-                $navigationUrl .= '&jenis=' . urlencode($latestProposal->jenis_penelitian);
-            }
-        } else {
-            // Current stage is a laporan stage - find the matching laporan
-            $targetLaporan = null;
-            foreach ($latestProposal->laporan as $laporan) {
-                $label = 'Laporan ' . $laporan->semester;
-                if ($label === $firstIncomplete) {
-                    $targetLaporan = $laporan;
-                    break;
+                // Proposal accepted — find first incomplete laporan
+                $targetLaporan = null;
+                foreach ($laporanStages as $ls) {
+                    if (!$ls['done']) {
+                        $targetLaporan = $ls;
+                        break;
+                    }
+                }
+
+                if ($targetLaporan) {
+                    $currentState = 'Laporan ' . $targetLaporan['semester'];
+                    $currentDescription = 'Laporan perlu dikerjakan.';
+                    $navigationUrl = '/dashboard?module=dosenmonitoringprogresslaporan';
+                    if ($skema) {
+                        $navigationUrl .= '&skema_id=' . $skema->skema_id . '&view=laporan';
+                    }
+                    $navigationUrl .= '&laporan_id=' . $targetLaporan['laporan_id'];
+                    $tab = \App\Helpers\NotificationUrl::laporanTab($targetLaporan['kode_kegiatan']);
+                    if ($tab) {
+                        $navigationUrl .= '&tab=' . $tab;
+                    }
+                    if ($jenis) {
+                        $navigationUrl .= '&jenis=' . urlencode($jenis);
+                    }
+                } else {
+                    // All done
+                    $allDone = empty($laporanStages) ? $proposalDone : true;
+                    foreach ($laporanStages as $ls) {
+                        if (!$ls['done']) { $allDone = false; break; }
+                    }
+                    if ($allDone) {
+                        $currentState = 'Selesai';
+                        $currentDescription = 'Semua tahap telah selesai.';
+                    } else {
+                        $currentState = $proposalStage;
+                        $currentDescription = null;
+                    }
+                    // Navigate to the last laporan or proposal
+                    if (!empty($laporanStages)) {
+                        $last = end($laporanStages);
+                        $navigationUrl = '/dashboard?module=dosenmonitoringprogresslaporan';
+                        if ($skema) {
+                            $navigationUrl .= '&skema_id=' . $skema->skema_id . '&view=laporan';
+                        }
+                        $navigationUrl .= '&laporan_id=' . $last['laporan_id'];
+                        $tab = \App\Helpers\NotificationUrl::laporanTab($last['kode_kegiatan']);
+                        if ($tab) $navigationUrl .= '&tab=' . $tab;
+                        if ($jenis) $navigationUrl .= '&jenis=' . urlencode($jenis);
+                    } else {
+                        if ($skema) {
+                            $navigationUrl .= '&skema_id=' . $skema->skema_id . '&view=proposal';
+                        }
+                        $navigationUrl .= '&proposal_id=' . $proposal->proposal_id . '&tab=PENGUMUMAN_SURAT_TUGAS';
+                        if ($jenis) $navigationUrl .= '&jenis=' . urlencode($jenis);
+                    }
                 }
             }
 
-            if ($targetLaporan) {
-                $navigationUrl = '/dashboard?module=dosenmonitoringprogresslaporan';
-                if ($skemaId) {
-                    $navigationUrl .= '&skema_id=' . $skemaId . '&view=laporan';
-                }
-                $navigationUrl .= '&laporan_id=' . $targetLaporan->laporan_id;
-                // Determine the tab from kode_kegiatan
-                $tab = \App\Helpers\NotificationUrl::laporanTab($targetLaporan->kodeKegiatan());
-                if ($tab) {
-                    $navigationUrl .= '&tab=' . $tab;
-                }
-                if ($targetLaporan->jenis_penelitian) {
-                    $navigationUrl .= '&jenis=' . urlencode($targetLaporan->jenis_penelitian);
-                }
+            // ── Priority: needs action > in progress > done ──
+            $priority = 2;
+            if ($currentState === 'Selesai') {
+                $priority = 3;
+            } elseif ($currentState !== null) {
+                $priority = 1;
             }
+
+            $items[] = [
+                'proposal_id' => $proposal->proposal_id,
+                'judul' => $proposal->judul ?? '-',
+                'skema_nama' => $skemaName,
+                'jenis_penelitian' => $jenis,
+                'proposal_status' => $proposal->status,
+                'proposal_stage' => $proposalStage,
+                'proposal_done' => $proposalDone,
+                'current_state' => $currentState,
+                'current_description' => $currentDescription,
+                'navigation_url' => $navigationUrl,
+                'proposal_stages' => [
+                    ['label' => 'Pengajuan', 'done' => !in_array($proposal->status, ['Draf', 'Menunggu proposal untuk diupload'])],
+                    ['label' => 'Seleksi', 'done' => in_array($proposal->status, ['Proposal Diterima', 'Ditolak'])],
+                    ['label' => 'Surat Tugas', 'done' => $proposal->status === 'Proposal Diterima'],
+                ],
+                'laporan_stages' => $laporanStages,
+                'priority' => $priority,
+            ];
         }
 
-        return [
-            'proposal_judul' => $latestProposal->judul,
-            'stages' => $stages,
-            'current_stage' => $firstIncomplete,
-            'navigation_url' => $navigationUrl,
-        ];
+        // Sort: priority 1 (needs action) first, then 2 (in progress), then 3 (done)
+        usort($items, fn($a, $b) => $a['priority'] <=> $b['priority']);
+
+        return $items;
     }
 
     private function getReviewerQueue(int $userId): array
@@ -732,6 +825,41 @@ class DashboardController extends Controller
         ])
             ->where('user_id', $userId)
             ->where('status_review', 'Belum direview')
+            ->latest('tgl_penugasan')
+            ->take(10)
+            ->get()
+            ->map(function ($p) {
+                $reviewable = $p->reviewable;
+                $isProposal = $reviewable instanceof Proposal;
+
+                return [
+                    'type' => $isProposal ? 'proposal' : 'laporan',
+                    'id' => $p->penugasan_id,
+                    'reviewable_id' => $p->reviewable_id,
+                    'judul' => $isProposal ? ($reviewable->judul ?? '-') : ($reviewable->judul_penelitian ?? '-'),
+                    'dosen' => $isProposal
+                        ? ($reviewable->user->nama ?? '-')
+                        : ($reviewable->proposal->user->nama ?? '-'),
+                    'semester' => $isProposal ? null : $reviewable->semester,
+                ];
+            })
+            ->toArray();
+    }
+
+    private function getReviewerCompletedQueue(int $userId): array
+    {
+        return PenugasanReviewer::with([
+            'reviewable' => function ($q) {
+                $q->withTrashed();
+                if ($q instanceof \App\Models\Proposal) {
+                    $q->with(['user' => fn($q2) => $q2->withTrashed()]);
+                } elseif ($q instanceof \App\Models\Laporan) {
+                    $q->with(['proposal' => fn($q2) => $q2->withTrashed(), 'proposal.user' => fn($q2) => $q2->withTrashed()]);
+                }
+            },
+        ])
+            ->where('user_id', $userId)
+            ->where('status_review', 'Telah direview')
             ->latest('tgl_penugasan')
             ->take(10)
             ->get()

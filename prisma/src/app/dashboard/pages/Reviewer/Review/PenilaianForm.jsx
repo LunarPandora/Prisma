@@ -8,13 +8,13 @@ import { faSpinner, faTag, faEye, faPencil, faBook, faRupiahSign } from '@fortaw
 import TextInput from "@/app/component/Inputs/TextInput"
 import SelectInput from "@/app/component/Inputs/SelectInput"
 import Modal from "@/app/component/Modal/Modal"
+import Alert from "@/app/component/Alert/Alert"
 
 import { generatePDFPreview, getPDFPageCount, getFileMeta, estimateReadingTime } from "@/app/component/Libraries/utils/pdfPreview"
 
 import { useUserStore } from "@/app/stores/useUserStore";
 import Button from "@/app/component/Inputs/Button"
 import UserTag from "@/app/component/Tags/UserTag"
-import { targetPublikasiOptions } from "@/app/component/Libraries/options/selections"
 import { uploadReview } from "@/app/component/Libraries/api/review"
 import { showToast } from "@/app/component/Toast/Toast"
 
@@ -63,6 +63,7 @@ export default function FormPenilaianReviewer({ refresh, close, data }){
     const [existingFile, setExistingFile] = useState(null)
 
     const [reviewLoading, setReviewLoading] = useState(false)
+    const [showConfirmSubmit, setShowConfirmSubmit] = useState(false)
 
     const [reviewForm, setReviewForm] = useState({
         keputusan: "",
@@ -346,6 +347,7 @@ useEffect(() => {
     }
 
     return (
+        <>
         <Modal isOpen={true} onClose={close} title={isLaporan ? "Review Laporan" : "Review Proposal"} maxWidth="max-w-6xl" closeOnBackdrop={false}
             footer={
                 <>
@@ -359,7 +361,7 @@ useEffect(() => {
 
                     <Button
                         fontSize="text-lg"
-                        onClick={submitReview}
+                        onClick={() => setShowConfirmSubmit(true)}
                         disabled={reviewLoading}
                     >
                         Submit Review
@@ -457,25 +459,21 @@ useEffect(() => {
                                     className={'col-span-2'}
                                 />
 
-                                <SelectInput
-                                    name="target_publikasi_gan"
-                                    value={form.target_publikasi_gan}
-                                    onChange={handleChange}
-                                    options={targetPublikasiOptions}
-                                    icon={faBook}
-                                    disabled={true}
-                                    placeholder="Target publikasi (ganjil)"
-                                />
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs text-gray-500">
+                                        <FontAwesomeIcon icon={faBook} className="mr-1" />
+                                        Target Publikasi (Ganjil)
+                                    </span>
+                                    <span className="text-sm text-gray-800">{form.target_publikasi_gan || "—"}</span>
+                                </div>
 
-                                <SelectInput
-                                    name="target_publikasi_gen"
-                                    value={form.target_publikasi_gen}
-                                    onChange={handleChange}
-                                    options={targetPublikasiOptions}
-                                    icon={faBook}
-                                    disabled={true}
-                                    placeholder="Target publikasi (genap)"
-                                />
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs text-gray-500">
+                                        <FontAwesomeIcon icon={faBook} className="mr-1" />
+                                        Target Publikasi (Genap)
+                                    </span>
+                                    <span className="text-sm text-gray-800">{form.target_publikasi_gen || "—"}</span>
+                                </div>
                             </>
                         ) : (
                             <>
@@ -911,5 +909,22 @@ useEffect(() => {
                 </div>
             </div>
         </Modal>
+
+        {showConfirmSubmit && (
+            <Alert
+                alertType="warning"
+                title="Submit Review"
+                msg="Apakah Anda yakin ingin submit review ini? Keputusan yang sudah dikirim tidak dapat diubah."
+                onCancel={() => setShowConfirmSubmit(false)}
+                onAccept={() => {
+                    submitReview()
+                }}
+                acceptText="Submit"
+                isConfirmation={true}
+                withBackground={true}
+                loading={reviewLoading}
+            />
+        )}
+        </>
     )
 }

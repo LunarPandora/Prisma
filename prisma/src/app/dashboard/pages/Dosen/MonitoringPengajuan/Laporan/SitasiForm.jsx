@@ -7,6 +7,7 @@ import { faX, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons"
 import TextInput from "@/app/component/Inputs/TextInput"
 import Button from "@/app/component/Inputs/Button"
 import Modal from "@/app/component/Modal/Modal"
+import Alert from "@/app/component/Alert/Alert"
 import { showToast } from "@/app/component/Toast/Toast"
 import { useFormSubmission } from "@/app/component/Libraries/hooks/useFormSubmission"
 
@@ -22,6 +23,8 @@ export default function SitasiForm({
     laporan,
 }) {
     const [items, setItems] = useState([])
+    const [deleteTarget, setDeleteTarget] = useState(null)
+    const [deleting, setDeleting] = useState(false)
 
     const { loading, submit } = useFormSubmission({
         onSuccess: async () => {
@@ -74,11 +77,15 @@ export default function SitasiForm({
 
     async function handleDelete(id) {
         try {
+            setDeleting(true)
             await deleteSitasi(id)
             await fetchItems()
             refresh()
         } catch (err) {
             console.error(err)
+        } finally {
+            setDeleting(false)
+            setDeleteTarget(null)
         }
     }
 
@@ -184,7 +191,7 @@ export default function SitasiForm({
                                     <td className="p-2">
                                         <button
                                             className="text-red-500 text-sm"
-                                            onClick={() => handleDelete(s.sitasi_id)}
+                                            onClick={() => setDeleteTarget(s)}
                                         >
                                             <FontAwesomeIcon icon={faTrash} />
                                         </button>
@@ -195,6 +202,20 @@ export default function SitasiForm({
                     </tbody>
                 </table>
             </div>
+
+            {deleteTarget && (
+                <Alert
+                    alertType="danger"
+                    title="Hapus Sitasi"
+                    msg={`Apakah Anda yakin ingin menghapus sitasi "${deleteTarget?.judul_sitasi}"?`}
+                    onCancel={() => setDeleteTarget(null)}
+                    onAccept={() => handleDelete(deleteTarget?.sitasi_id)}
+                    acceptText="Hapus"
+                    isConfirmation={true}
+                    withBackground={true}
+                    loading={deleting}
+                />
+            )}
         </Modal>
     )
 }

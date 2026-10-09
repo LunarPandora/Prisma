@@ -73,7 +73,8 @@ class Proposal extends Model
 
     public function penugasan()
     {
-        return $this->hasMany(PenugasanReviewer::class, 'proposal_id');
+        return $this->hasMany(PenugasanReviewer::class, 'proposal_id')
+            ->where('reviewable_type', Proposal::class);
     }
 
     public function prodi()

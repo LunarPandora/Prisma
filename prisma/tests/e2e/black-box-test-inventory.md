@@ -1,20 +1,19 @@
 # PRISMA Black Box E2E Test Case Inventory
 
-**Date:** August 18, 2026 (Updated)
-**Total:** 309 tests
+**Date:** August 27, 2026 (Updated)
+**Total:** 358 tests
 **Verified via:** Full cross-role regression (clean DB per role, fresh server restart)
 
 | Role | Tests | Files | Passed | Failed | Skipped |
 |------|-------|-------|--------|--------|---------|
-| Staff LPPM | 60 | 12 | 60 | 0 | 0 |
-| Dosen | 93 | 20 | 93 | 0 | 0 |
-| Ketua LPPM | 59 | 12 | 59 | 0 | 0 |
-| Reviewer | 37 | 8 | 36 | 0 | 1 |
-| Superadmin | 60 | 13 | — | — | — |
-| **Total** | **309** | **65** | **248** | **0** | **1** |
-
-> Superadmin: Auth setup not yet validated in this run (requires separate DB reset + server restart cycle).
-> Reviewer skip: RV-PKM-PROP-MUT-001 (PkM proposal review — conditional skip, PkM proposal not seeded in reviewer fixture).
+| Staff LPPM | 66 | 14 | — | — | — |
+| Dosen | 99 | 21 | — | — | — |
+| Ketua LPPM | 62 | 14 | — | — | — |
+| Reviewer | 39 | 10 | — | — | — |
+| Superadmin | 61 | 14 | — | — | — |
+| Screenshots | 26 | 1 | — | — | — |
+| Shared/Guest | 5 | 1 | — | — | — |
+| **Total** | **358** | **76** | **—** | **—** | **—** |
 
 | Test ID | Role | Program | Target / Module | Feature | Test Type | Precondition | User Action / Input | Expected Result | Result | Spec File |
 |---------|------|---------|-----------------|---------|-----------|--------------|---------------------|-----------------|--------|-----------|

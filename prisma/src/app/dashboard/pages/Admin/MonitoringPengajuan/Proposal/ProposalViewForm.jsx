@@ -14,6 +14,7 @@ import { useUserStore } from "@/app/stores/useUserStore";
 import Button from "@/app/component/Inputs/Button"
 import { Field, Section } from "@/app/component/Display/SectionField"
 import Badge from "@/app/component/Display/Badge"
+import { targetPublikasiOptions } from "@/app/component/Libraries/options/selections"
 
 function formatRupiah(value) {
     if (!value && value !== 0) return "—"
@@ -22,7 +23,7 @@ function formatRupiah(value) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num)
 }
 
-export default function FormProposalViewAdmin({ close, data, triggerPenugasan, triggerTolak, handleKetuaDecideSeleksi, handleStaffDecideSeleksi, handleViewSeleksiRejection, handleTerimaPengajuan }){
+export default function FormProposalViewAdmin({ close, data, triggerTolak, handleKetuaDecideSeleksi, handleStaffDecideSeleksi, handleViewSeleksiRejection, handleTerimaPengajuan }){
     const [preview, setPreview] = useState(null)
     const [fileMeta, setFileMeta] = useState(null)
     const [estimateTime, setEstimateTime] = useState(null)
@@ -36,6 +37,7 @@ export default function FormProposalViewAdmin({ close, data, triggerPenugasan, t
 
     const isKetua = user?.role === "Ketua LPPM"
     const isStaff = user?.role === "Staff LPPM"
+    const isAdmin = isKetua || isStaff
 
     const ketuaAlreadyDecided = data.ketua_seleksi_approved === true || data.status === "Ditolak"
     const isFinished = data.status === "Proposal Diterima" || data.status === "Dalam pengerjaan"
@@ -85,6 +87,12 @@ export default function FormProposalViewAdmin({ close, data, triggerPenugasan, t
             setLocalFileUrl(doc.file_url)
         }
     }, [data])
+
+    const targetLabel = (val) => {
+        if (!val || val === '-' || val === '') return null
+        const match = targetPublikasiOptions.find(o => o.value.toLowerCase() === val.toLowerCase())
+        return match ? match.text : val
+    }
 
     const ganjilMembers = [
         ...(data.member_dosen_proposal || []).filter(m => m.semester === 'Ganjil').map(m => ({ ...m, role: 'Dosen' })),
@@ -164,28 +172,13 @@ export default function FormProposalViewAdmin({ close, data, triggerPenugasan, t
                             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                                    <p className="font-medium text-red-800">Proposal Ditolak oleh Ketua LPPM</p>
+                                    <p className="font-medium text-red-800">Pengembalian Ditolak oleh Ketua LPPM</p>
                                 </div>
                                 <div
                                     className="prose prose-sm max-w-none text-red-700 mb-3"
                                     dangerouslySetInnerHTML={{ __html: data.rejected_by_ketua_seleksi_reason }}
                                 />
-                                <div className="flex gap-2">
-                                    <Button 
-                                        fontSize="text-sm" 
-                                        onClick={() => handleStaffDecideSeleksi(data, 'accept')}
-                                        variant="success"
-                                    >
-                                        Setuju Ketua
-                                    </Button>
-                                    <Button 
-                                        fontSize="text-sm" 
-                                        onClick={() => handleStaffDecideSeleksi(data, 'reject')}
-                                        variant="danger"
-                                    >
-                                        Tolak Keputusan Ketua
-                                    </Button>
-                                </div>
+                                <p className="text-sm text-red-600">Ketua LPPM menolak pengembalian proposal ini. Proposal tetap dalam proses review.</p>
                             </div>
                         )}
 
@@ -292,7 +285,14 @@ export default function FormProposalViewAdmin({ close, data, triggerPenugasan, t
                         <Section title="Rencana Penelitian — Ganjil">
                             <div className="grid grid-cols-2 gap-5">
                                 <Field label="Rencana Judul Publikasi" value={data.rencana_judul_publikasi_gan} />
-                                <Field label="Target Publikasi" value={data.target_publikasi_gan} />
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs text-gray-500">Target Publikasi</span>
+                                    {targetLabel(data.target_publikasi_gan) ? (
+                                        <Badge color="blue" size="sm">{targetLabel(data.target_publikasi_gan)}</Badge>
+                                    ) : (
+                                        <span className="text-sm text-gray-400 italic">—</span>
+                                    )}
+                                </div>
                                 <div className="col-span-2">
                                     <Field label="Metode Penelitian" value={data.metopen_gan} />
                                 </div>
@@ -304,7 +304,14 @@ export default function FormProposalViewAdmin({ close, data, triggerPenugasan, t
                         <Section title="Rencana Penelitian — Genap">
                             <div className="grid grid-cols-2 gap-5">
                                 <Field label="Rencana Judul Publikasi" value={data.rencana_judul_publikasi_gen} />
-                                <Field label="Target Publikasi" value={data.target_publikasi_gen} />
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs text-gray-500">Target Publikasi</span>
+                                    {targetLabel(data.target_publikasi_gen) ? (
+                                        <Badge color="blue" size="sm">{targetLabel(data.target_publikasi_gen)}</Badge>
+                                    ) : (
+                                        <span className="text-sm text-gray-400 italic">—</span>
+                                    )}
+                                </div>
                                 <div className="col-span-2">
                                     <Field label="Metode Penelitian" value={data.metopen_gen} />
                                 </div>
@@ -438,14 +445,16 @@ export default function FormProposalViewAdmin({ close, data, triggerPenugasan, t
                                 </Button>
                             )}
 
-                            <a 
-                                href={localFileUrl} 
-                                download 
-                                className="bg-white hover:bg-foreground text-foreground/90 hover:text-white text-sm px-4 py-2 rounded-lg font-medium transition-colors duration-300 ease-in-out cursor-pointer border-2 border-foreground/80 flex items-center gap-2"
-                            >
-                                <FontAwesomeIcon icon={faDownload} />
-                                Download
-                            </a> 
+                            {isAdmin && (
+                                <a 
+                                    href={localFileUrl} 
+                                    download 
+                                    className="bg-white hover:bg-foreground text-foreground/90 hover:text-white text-sm px-4 py-2 rounded-lg font-medium transition-colors duration-300 ease-in-out cursor-pointer border-2 border-foreground/80 flex items-center gap-2"
+                                >
+                                    <FontAwesomeIcon icon={faDownload} />
+                                    Download
+                                </a> 
+                            )}
                             
                             {isKetua && !ketuaAlreadyDecided && !isFinished && (
                                 <Button 
@@ -453,15 +462,6 @@ export default function FormProposalViewAdmin({ close, data, triggerPenugasan, t
                                     onClick={() => handleTerimaPengajuan(data)}
                                 >
                                     Terima Pengajuan
-                                </Button>
-                            )}
-
-                            {!isKetua && !isFinished && (
-                                <Button 
-                                    fontSize="text-sm" 
-                                    onClick={() => triggerPenugasan(data)}
-                                >
-                                    Tugaskan Reviewer
                                 </Button>
                             )}
                         </div>

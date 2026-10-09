@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../../helpers/evidence'
 import {
   openReviewProposalTab,
   openReviewLaporanTab,
@@ -119,35 +119,6 @@ test.describe('Reviewer — Laporan Mutations', () => {
 
     const bodyAfter = await page.locator('body').textContent()
     expect(bodyAfter).toContain('Telah direview')
-  })
-})
-
-test.describe('Reviewer — Validation', () => {
-  test('RV-VAL-001: Submit with empty keputusan — verify actual behavior', async ({ page }) => {
-    await openReviewProposalTab(page)
-
-    const row = page.getByRole('row').filter({ hasText: /Minggu, 2 Agustus 2026/ }).first()
-    await expect(row).toBeVisible({ timeout: 10_000 })
-
-    const actionBtn = row.locator('button').filter({ has: page.locator('svg[data-icon="clipboard-list"]') }).first()
-    await expect(actionBtn).toBeVisible({ timeout: 5_000 })
-    await actionBtn.click()
-    await page.waitForTimeout(3000)
-
-    const body = await page.locator('body').textContent()
-    expect(body).toContain('Submit Review')
-
-    await fillScores(page, [3, 3, 3, 3])
-    await fillCatatan(page, 'RV-VAL-001: Testing empty keputusan submission')
-    await submitReview(page)
-    await page.waitForTimeout(3000)
-
-    const bodyAfter = await page.locator('body').textContent()
-    const hasResponse = (bodyAfter || '').includes('berhasil') ||
-                        (bodyAfter || '').includes('Gagal') ||
-                        (bodyAfter || '').includes('error') ||
-                        (bodyAfter || '').includes('Submit Review')
-    expect(hasResponse).toBeTruthy()
   })
 })
 

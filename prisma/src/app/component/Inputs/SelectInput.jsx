@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { motion, AnimatePresence } from "framer-motion"
 import { faCheck, faChevronDown, faRefresh, faX } from "@fortawesome/free-solid-svg-icons"
@@ -9,6 +10,9 @@ export default function SelectInput({ icon, tag, placeholder, options, className
     const [isEmpty, setIsEmpty] = useState(true)
     const [highlightedIndex, setHighlightedIndex] = useState(0)
     const [suggestionWindow, setSuggestionWindow] = useState(false)
+    const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 })
+
+    const inputWrapRef = useRef(null)
 
     const [internalOptions, setInternalOptions] = useState([])
     const [filteredOptions, setFilteredOptions] = useState([])
@@ -158,7 +162,7 @@ export default function SelectInput({ icon, tag, placeholder, options, className
     }, [filteredOptions])
 
     return (
-        <div className={`w-full relative ${classSpan}`}>
+        <div className={`w-full relative ${classSpan}`} ref={inputWrapRef}>
             <span className={`text-xs ${error ? 'text-red-500 font-medium' : 'text-gray-500'}`}>
                 { tag ? tag : placeholder }
                 { required && <span className="text-red-500 ml-0.5">*</span> }
@@ -187,6 +191,11 @@ export default function SelectInput({ icon, tag, placeholder, options, className
                     placeholder={placeholder}
                     onFocus={() => {
                         setSuggestionWindow(true)
+
+                        if (inputWrapRef.current) {
+                            const rect = inputWrapRef.current.getBoundingClientRect()
+                            setDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width })
+                        }
 
                         if (dataSource && internalOptions.length === 0) {
                             fetchData()
@@ -222,88 +231,92 @@ export default function SelectInput({ icon, tag, placeholder, options, className
                 <FontAwesomeIcon icon={faChevronDown} className={`text-gray-500 text-md duration-200 transition-transform ease-in-out ${suggestionWindow ? 'rotate-180' : 'rotate-0'}`} />
             </div>
 
-            <AnimatePresence>
-                { suggestionWindow &&
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, translateY: -10 }}
-                        animate={{ opacity: 1, scale: 1, translateY: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, translateY: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute border border-gray-200 bg-white min-w-50 shadow-lg/10 mt-1.5 rounded-lg w-full h-fit z-20"
-                    >
-                        <div className="overflow-y-scroll h-full p-2 max-h-32">
-                            { 
-                                loading ? (
-                                    <div className="px-3 py-2 text-sm text-gray-500">
-                                        Loading...
-                                    </div>
-                                ) :
-                                filteredOptions.length < 1 ? (
-                                    <div className="w-full px-3 py-1.5">
-                                        <p className="text-sm">Tidak ada pilihan tersedia.</p>
-                                    </div>
-                                ) :
-                                isEmpty ? (
-                                    <div className="w-full px-3 py-1.5">
-                                        <p className="text-sm">Tidak ditemukan opsi bernama "{inputValue}".</p>
-                                    </div>
-                                ) :
-                                filteredOptions.map((val, i) => (
-                                    <div 
-                                        className={`
-                                            flex justify-between items-center w-full px-3 py-2 rounded-md group transition-color ease-in-out duration-200
-                                            ${highlightedIndex == i ? 'text-blue-700 bg-blue-100 hover:bg-blue-200 hover:text-blue-800' : 'hover:bg-blue-200 hover:text-blue-800' }
-                                            ${props.value === val.value ? 'bg-blue-500 text-white' : ''}
-                                        `}
-                                        key={i} 
-                                        onMouseDown={() => saveValue(val)}>
-                                        <p className="text-sm flex items-center /">
-                                            {props.value === val.value
-                                                ? val.text
-                                                : highlightMatch(val.text, inputValue)
+            {createPortal(
+                <AnimatePresence>
+                    { suggestionWindow &&
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.15 }}
+                            className="fixed border border-gray-200 bg-white shadow-lg rounded-lg z-[9999]"
+                            style={{ top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
+                        >
+                            <div className="overflow-y-auto p-2 max-h-48">
+                                { 
+                                    loading ? (
+                                        <div className="px-3 py-2 text-sm text-gray-500">
+                                            Loading...
+                                        </div>
+                                    ) :
+                                    filteredOptions.length < 1 ? (
+                                        <div className="w-full px-3 py-1.5">
+                                            <p className="text-sm">Tidak ada pilihan tersedia.</p>
+                                        </div>
+                                    ) :
+                                    isEmpty ? (
+                                        <div className="w-full px-3 py-1.5">
+                                            <p className="text-sm">Tidak ditemukan opsi bernama "{inputValue}".</p>
+                                        </div>
+                                    ) :
+                                    filteredOptions.map((val, i) => (
+                                        <div 
+                                            className={`
+                                                flex justify-between items-center w-full px-3 py-2 rounded-md group transition-color ease-in-out duration-200
+                                                ${highlightedIndex == i ? 'text-blue-700 bg-blue-100 hover:bg-blue-200 hover:text-blue-800' : 'hover:bg-blue-200 hover:text-blue-800' }
+                                                ${props.value === val.value ? 'bg-blue-500 text-white' : ''}
+                                            `}
+                                            key={i} 
+                                            onMouseDown={() => saveValue(val)}>
+                                            <p className="text-sm flex items-center /">
+                                                {props.value === val.value
+                                                    ? val.text
+                                                    : highlightMatch(val.text, inputValue)
+                                                }
+                                            </p>
+                                            {
+                                                (props.value === val.value) && 
+                                                <FontAwesomeIcon icon={faCheck} className="text-sm text-white group-hover:text-blue-800 transition-color ease-in-out duration-200" />
                                             }
-                                        </p>
-                                        {
-                                            (props.value === val.value) && 
-                                            <FontAwesomeIcon icon={faCheck} className="text-sm text-white group-hover:text-blue-800 transition-color ease-in-out duration-200" />
-                                        }
-                                    </div>
-                                ))
-                            }
-                        </div>
-
-                        {(!props.disabled && (inputValue != '')) && 
-                            <div className={`flex gap-1 items-center justify-end border-t-[0.5px] border-t-gray-300 p-2`}>
-                                { inputValue && (
-                                    <div className="flex items-center gap-1 relative">
-                                        <button 
-                                            onMouseDown={(e) => {
-                                                e.preventDefault()
-                                                setInputValue("")
-                                                setFilteredOptions(resolvedOptions)
-                                                setIsEmpty(false)
-                                                triggerChange("")
-                                            }}
-                                            className="bg-red-500 flex items-center justify-center p-1 aspect-square rounded-full overflow-hidden group"
-                                        >
-                                            <FontAwesomeIcon icon={faX} className="text-[8px] transition-all duration-200 ease-in-out text-black opacity-0 group-hover:opacity-100" />
-                                        </button>
-                                    </div>
-                                )}
-
-                                { dataSource && (
-                                    <div className="relative bg-yellow-500 flex items-center justify-center p-1 aspect-square rounded-full group" onMouseDown={(e) => {
-                                        e.preventDefault()
-                                        fetchData()
-                                    }}>
-                                        <FontAwesomeIcon icon={faRefresh} className="text-[8px] text-black opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out" />
-                                    </div>
-                                )}
+                                        </div>
+                                    ))
+                                }
                             </div>
-                        }
-                    </motion.div>
-                }
-            </AnimatePresence>
+
+                            {(!props.disabled && (inputValue != '')) && 
+                                <div className="flex gap-1 items-center justify-end border-t border-gray-300 p-2">
+                                    { inputValue && (
+                                        <div className="flex items-center gap-1 relative">
+                                            <button 
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault()
+                                                    setInputValue("")
+                                                    setFilteredOptions(resolvedOptions)
+                                                    setIsEmpty(false)
+                                                    triggerChange("")
+                                                }}
+                                                className="bg-red-500 flex items-center justify-center p-1 aspect-square rounded-full overflow-hidden group"
+                                            >
+                                                <FontAwesomeIcon icon={faX} className="text-[8px] transition-all duration-200 ease-in-out text-black opacity-0 group-hover:opacity-100" />
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    { dataSource && (
+                                        <div className="relative bg-yellow-500 flex items-center justify-center p-1 aspect-square rounded-full group" onMouseDown={(e) => {
+                                            e.preventDefault()
+                                            fetchData()
+                                        }}>
+                                            <FontAwesomeIcon icon={faRefresh} className="text-[8px] text-black opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out" />
+                                        </div>
+                                    )}
+                                </div>
+                            }
+                        </motion.div>
+                    }
+                </AnimatePresence>,
+                document.body
+            )}
 
             {error && (
                 <p className="text-red-500 text-xs mt-1">{error}</p>

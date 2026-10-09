@@ -28,16 +28,25 @@ export const KODE_KEGIATAN_LABELS = {
 
 // Short labels for compact table badges
 export const KODE_KEGIATAN_SHORT_LABELS = {
+    "PENERIMAAN_PROPOSAL": "Penerimaan Proposal",
+    "SELEKSI_PROPOSAL": "Seleksi Proposal",
+    "PENGUMUMAN_SURAT_TUGAS": "Pengumuman Surat Tugas",
     "PROSES_PENELITIAN_GANJIL": "Proses",
     "PROSES_PENELITIAN_GENAP": "Proses",
     "PROSES_PKM_GANJIL": "Proses PkM",
     "PROSES_PKM_GENAP": "Proses PkM",
     "PUBLIKASI_GANJIL": "Publikasi",
     "PUBLIKASI_GENAP": "Publikasi",
+    "PUBLIKASI_PKM_GANJIL": "Publikasi PkM",
+    "PUBLIKASI_PKM_GENAP": "Publikasi PkM",
     "DISEMINASI_GANJIL": "Diseminasi",
     "DISEMINASI_GENAP": "Diseminasi",
+    "DISEMINASI_PKM_GANJIL": "Diseminasi PkM",
+    "DISEMINASI_PKM_GENAP": "Diseminasi PkM",
     "CLAIM_DANA_GANJIL": "Claim Dana",
     "CLAIM_DANA_GENAP": "Claim Dana",
+    "CLAIM_DANA_PKM_GANJIL": "Claim Dana PkM",
+    "CLAIM_DANA_PKM_GENAP": "Claim Dana PkM",
     "PENGEMBALIAN_DANA_GANJIL": "Pengembalian",
     "PENGEMBALIAN_DANA_GENAP": "Pengembalian",
     "LUARAN_PENELITIAN": "Luaran",
@@ -53,11 +62,11 @@ export const LAPORAN_SEQUENCES = {
         { kode: `CLAIM_DANA_${sem}`, label: "Claim Dana" },
     ],
     PkM: (sem) => [
-        { kode: `CLAIM_DANA_${sem}`, label: "Claim Dana" },
+        { kode: `CLAIM_DANA_PKM_${sem}`, label: "Claim Dana PkM" },
         { kode: `PROSES_PKM_${sem}`, label: "Proses PkM" },
-        { kode: `PUBLIKASI_${sem}`, label: "Publikasi" },
+        { kode: `PUBLIKASI_PKM_${sem}`, label: "Publikasi PkM" },
         { kode: `PENGEMBALIAN_DANA_${sem}`, label: "Pengembalian Dana" },
-        { kode: `DISEMINASI_${sem}`, label: "Diseminasi" },
+        { kode: `DISEMINASI_PKM_${sem}`, label: "Diseminasi PkM" },
     ],
 }
 
@@ -66,8 +75,11 @@ const STAGE_TO_PHASE = {
     "PROSES_PENELITIAN": "proses",
     "PROSES_PKM": "proses",
     "PUBLIKASI": "publikasi",
+    "PUBLIKASI_PKM": "publikasi",
     "DISEMINASI": "diseminasi",
+    "DISEMINASI_PKM": "diseminasi",
     "CLAIM_DANA": "claim",
+    "CLAIM_DANA_PKM": "claim",
     "PENGEMBALIAN_DANA": "pengembalian",
 }
 
@@ -76,8 +88,11 @@ const STAGE_TAB_LABELS = {
     "PROSES_PENELITIAN": "Proses",
     "PROSES_PKM": "Proses PkM",
     "PUBLIKASI": "Publikasi",
+    "PUBLIKASI_PKM": "Publikasi PkM",
     "DISEMINASI": "Diseminasi",
+    "DISEMINASI_PKM": "Diseminasi PkM",
     "CLAIM_DANA": "Claim Dana",
+    "CLAIM_DANA_PKM": "Claim Dana PkM",
     "PENGEMBALIAN_DANA": "Pengembalian Dana",
 }
 
@@ -176,17 +191,24 @@ export const LAPORAN_STATUS_COLORS = {
     "menunggu konfirmasi pengiriman dana": { color: "emerald", label: "Menunggu konfirmasi pengiriman dana" },
     "menunggu konfirmasi penerimaan dana": { color: "teal", label: "Menunggu konfirmasi penerimaan dana" },
     "revisi": { color: "orange", label: "Revisi" },
+    "ditolak": { color: "red", label: "Ditolak" },
     "selesai": { color: "green", label: "Selesai" },
     default: { color: "gray", label: "—" },
 }
 
 // ── Laporan Kode Kegiatan ────────────────────────────────────────────
 export const LAPORAN_KODE_COLORS = {
+    "Penerimaan Proposal": "cyan",
+    "Seleksi Proposal": "indigo",
+    "Pengumuman Surat Tugas": "teal",
     "Proses": "purple",
     "Proses PkM": "purple",
     "Publikasi": "blue",
+    "Publikasi PkM": "blue",
     "Diseminasi": "yellow",
+    "Diseminasi PkM": "yellow",
     "Claim Dana": "emerald",
+    "Claim Dana PkM": "emerald",
     "Pengembalian": "orange",
     "Pengembalian Dana": "orange",
     "Luaran": "green",

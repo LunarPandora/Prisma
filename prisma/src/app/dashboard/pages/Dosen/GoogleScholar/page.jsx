@@ -496,9 +496,8 @@ export default function GoogleScholarPage() {
                     searchQuery={pubQs}
                     refreshKey={pubRefreshKey}
                     onContextRequest={openMenu}
-                    maxActions={1}
                     rowActions={[
-                        { icon: faChartLine, text: "Lihat Riwayat Sitasi", action: onViewCitationHistory }
+                        { icon: faChartLine, text: "Lihat Riwayat Sitasi", action: handleViewCitationHistory }
                     ]}
                     columns={[
                         {

@@ -4,7 +4,8 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import SelectInput from "@/app/component/Inputs/SelectInput";
-import { faFile, faSearch, faSquarePollVertical, faClipboardList } from "@fortawesome/free-solid-svg-icons";
+import { faFile, faSearch, faSquarePollVertical, faClipboardList, faCircleCheck, faCircleHalfStroke } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useUserStore } from "@/app/stores/useUserStore";
 
 import { getModuleAccess } from "@/app/component/Libraries/utils/menu";
@@ -48,6 +49,11 @@ export default function ListPengajuanReviewer(){
     const [showPenilaianModal, setShowPenilaianModal] = useState(false)
 
     const [reviewType, setReviewType] = useState(initialType)
+
+    useEffect(() => {
+        setReviewType(initialType)
+        setRefreshKey(prev => prev + 1)
+    }, [initialType])
 
     // const [editPenilaianModal, setEditPenilaianModal] = useState(false)
     // const [removePenilaianModal, setRemovePenilaianModal] = useState(false)
@@ -194,14 +200,19 @@ export default function ListPengajuanReviewer(){
                     fetchMethod={reviewType === "laporan" ? getLaporan : getProposal}
                     searchQuery={qb.toQueryString()}
                     refreshKey={refreshKey}
+                    highlightId={highlightId}
                     className="w-full"
                     roundedStyle="rounded-lg rounded-tl-none"
                     onContextRequest={(e, type, data, source) => openMenu(e, type, data, source)}
-                    maxActions={1}
                     onRefresh={refreshTable}
                     rowHighlightKey={reviewType === "laporan" ? "laporan_id" : "proposal_id"}
                     rowActions={[
-                        { icon: faClipboardList, text: "Mulai penilaian", action: handleShow, enabled: canStartReview }
+                        { icon: faClipboardList, text: "Mulai penilaian", action: handleShow, enabled: canStartReview, hidden: (r) => {
+                            if (reviewType === "laporan") {
+                                return !(r.penugasan || []).find(p => p.user_id === user?.id)
+                            }
+                            return false
+                        } }
                     ]}
                     columns={[
                         reviewType === "laporan"
@@ -274,7 +285,7 @@ export default function ListPengajuanReviewer(){
                                     <span className="relative w-full">
                                         <div className="flex items-center gap-2 text-xs peer">
                                             <Image
-                                                src={`${row.ketua?.avatar_url || ''}`}
+                                                src={row.ketua?.avatar_url || null}
                                                 alt={row.ketua?.nama || 'Ketua'}
                                                 width={25}
                                                 height={25}
@@ -303,7 +314,7 @@ export default function ListPengajuanReviewer(){
                                                         <span className="relative" key={i}>
                                                             <div className="flex items-center gap-2 text-xs peer">
                                                                 <Image
-                                                                    src={`${p.reviewer?.avatar_url || ''}`}
+                                                                    src={p.reviewer?.avatar_url || null}
                                                                     alt={p.reviewer?.nama || 'Reviewer'}
                                                                     width={25}
                                                                     height={25}
@@ -311,6 +322,11 @@ export default function ListPengajuanReviewer(){
                                                                     unoptimized
                                                                 />
                                                                 <p className="peer truncate">{p.reviewer?.nama}</p>
+                                                                {p.status_review === "Telah direview" ? (
+                                                                    <FontAwesomeIcon icon={faCircleCheck} className="text-green-600 text-xs" />
+                                                                ) : (
+                                                                    <FontAwesomeIcon icon={faCircleHalfStroke} className="text-yellow-500 text-xs" />
+                                                                )}
                                                             </div>
                                                         
                                                             <span className="absolute -top-7 bg-white shadow-lg opacity-0 peer-hover:opacity-100 rounded-md text-black text-xs px-2 py-1 transition-opacity duration-200 ease-in-out">{p.reviewer?.nama}</span>

@@ -10,7 +10,7 @@ import Button from "@/app/component/Inputs/Button"
 import Modal from "@/app/component/Modal/Modal"
 import { showToast } from "@/app/component/Toast/Toast"
 
-import { fetchPenerimaanProposal, fetchKegiatan } from "@/app/component/Libraries/api/kegiatan"
+import { fetchKegiatan } from "@/app/component/Libraries/api/kegiatan"
 import { addHalamanPengesahan, updateHalamanPengesahan } from "@/app/component/Libraries/api/proposal"
 import { fetchListPublicationCategory } from "@/app/component/Libraries/api/kategoripublikasi"
 
@@ -61,8 +61,6 @@ export default function FormProposal({ refresh, close, data, isEdit, skema }){
         
         rencana_luaran: "",
         institusi_mitra: "",
-        skema_id: "",
-        kegiatan_id: "",
         skema: "",
         sumber_skema: "",
 
@@ -76,11 +74,6 @@ export default function FormProposal({ refresh, close, data, isEdit, skema }){
         ganjil: [],
         genap: []
     })
-
-    // kegiatanIdMap[skema_id] = { Penelitian: kegiatan_id, PkM: kegiatan_id }
-    // Populated when the skema picker loads, so we can derive the correct
-    // kegiatan_id at submit time from the pair (skema_id, jenis_penelitian).
-    const [kegiatanIdMap, setKegiatanIdMap] = useState({})
 
     const user = useUserStore(state => state.user)
 
@@ -140,7 +133,6 @@ export default function FormProposal({ refresh, close, data, isEdit, skema }){
                 jenis_penelitian_gan: "Jenis penelitian (Ganjil)",
                 jenis_penelitian_gen: "Jenis penelitian (Genap)",
                 judul: "Judul proposal",
-                skema_id: "Skema penelitian",
                 topik_penelitian: "Topik penelitian",
                 bidang_ilmu: "Bidang ilmu",
                 sumber_skema: "Sumber pendanaan",
@@ -178,27 +170,6 @@ export default function FormProposal({ refresh, close, data, isEdit, skema }){
                 missing.push("Anggota peneliti (semester genap) — minimal 1")
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Resolve kegiatan_id from (skema_id, jenis_penelitian)
-            |--------------------------------------------------------------------------
-            */
-
-            const resolvedKegiatanIdGan =
-                kegiatanIdMap?.[form.skema_id]?.[form.jenis_penelitian_gan]
-                ?? kegiatanIdMap?.[form.skema_id]?.['Penelitian']
-
-            const resolvedKegiatanIdGen =
-                kegiatanIdMap?.[form.skema_id]?.[form.jenis_penelitian_gen]
-                ?? kegiatanIdMap?.[form.skema_id]?.['Penelitian']
-
-            if (!resolvedKegiatanIdGan || !resolvedKegiatanIdGen) {
-                missing.push(
-                    "Kombinasi skema + jenis penelitian tidak valid " +
-                    "(pastikan kegiatan penerimaan proposal untuk kombinasi ini masih aktif)"
-                )
-            }
-
             if (missing.length > 0) {
                 showToast("Formulir belum lengkap. Field berikut wajib diisi: " + missing.join(", "), "error")
                 return
@@ -206,15 +177,14 @@ export default function FormProposal({ refresh, close, data, isEdit, skema }){
 
             const formData = new FormData()
             Object.entries(form).forEach(([key, value]) => {
-                if (key === "skema_id") return // not persisted
-
                 if (value !== null && value !== undefined && value !== "" && value !== "-") {
                     formData.append(key, value)
                 }
             })
 
-            // Overwrite with the resolved kegiatan_id.
-            formData.set("kegiatan_id", resolvedKegiatanIdGan)
+            if (skema?.skema_id) {
+                formData.set("skema_id", skema.skema_id)
+            }
 
             const serializeMembers = (type, semester, role) => {
                 const key = memberConfig[type].key
@@ -401,44 +371,6 @@ export default function FormProposal({ refresh, close, data, isEdit, skema }){
                 className="flex flex-col gap-3"
             >
                 <div className="w-full grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-y-2 h-fit w-full border border-gray-300 rounded-md p-5 bg-white col-span-2">
-                        <span className="text-gray-600 text-md font-medium text-lg">
-                            Tipe penelitian
-                        </span>
-
-                        <div className="w-full grid grid-cols-2 gap-2"> 
-                            <SelectInput
-                                name="skema_id"
-                                value={form.skema_id}
-                                onChange={handleChange}
-                                dataSource={async () => {
-                                    const rows = await fetchPenerimaanProposal()
-
-                                    const map = {}
-                                    for (const row of rows) {
-                                        const jenisMap = {}
-                                        for (const [jenis, pid] of Object.entries(row.kegiatan_id_map || {})) {
-                                            jenisMap[jenis] = pid
-                                            if (jenis === 'Pengabdian kepada Masyarakat') {
-                                                jenisMap['PkM'] = pid
-                                            }
-                                        }
-                                        map[String(row.skema_id)] = jenisMap
-                                    }
-                                    setKegiatanIdMap(map)
-
-                                    return rows
-                                }}
-                                transform={(item) => ({
-                                    text: item.nama_skema,
-                                    value: String(item.skema_id)
-                                })}
-                                icon={faFlask}
-                                placeholder={`Pilih skema penelitian untuk disubmit`}
-                            />
-                        </div>
-                    </div>
-
                     <div className="flex flex-col gap-y-2 h-fit w-full border border-gray-300 rounded-md p-5 bg-white col-span-2">
                         <span className="text-gray-600 text-md font-medium text-lg">
                             Detail penelitian

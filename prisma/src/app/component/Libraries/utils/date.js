@@ -15,6 +15,8 @@ export function formatIndonesianRange(range) {
 
   const to = formatter.format(parseDate(range.to))
 
+  if (from === to) return from
+
   return `${from} hingga ${to}`
 }
 

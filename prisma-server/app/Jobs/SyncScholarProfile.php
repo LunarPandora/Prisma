@@ -37,20 +37,32 @@ class SyncScholarProfile implements ShouldQueue
         $profile = ScholarProfile::find($this->scholarProfileId);
 
         if (!$profile) {
-            Log::warning('Scholar profile not found for sync job', [
+            Log::warning('Scholar: Profile not found for sync job', [
                 'scholar_profile_id' => $this->scholarProfileId,
             ]);
             return;
         }
 
         if ($profile->sync_status === 'syncing') {
-            Log::info('Scholar profile already syncing, skipping', [
+            Log::info('Scholar: Profile already syncing, skipping job', [
                 'scholar_profile_id' => $this->scholarProfileId,
+                'author_id'          => $profile->scholar_author_id,
             ]);
             return;
         }
 
+        Log::info('Scholar: Sync job starting', [
+            'scholar_profile_id' => $this->scholarProfileId,
+            'author_id'          => $profile->scholar_author_id,
+            'attempt'            => $this->attempts(),
+        ]);
+
         $syncService->sync($profile);
+
+        Log::info('Scholar: Sync job finished', [
+            'scholar_profile_id' => $this->scholarProfileId,
+            'author_id'          => $profile->scholar_author_id,
+        ]);
     }
 
     public function failed(\Throwable $exception): void
@@ -62,11 +74,13 @@ class SyncScholarProfile implements ShouldQueue
                 'sync_status'     => 'failed',
                 'last_sync_error' => mb_substr($exception->getMessage(), 0, 500),
             ]);
-        }
 
-        Log::error('SyncScholarProfile job failed', [
-            'scholar_profile_id' => $this->scholarProfileId,
-            'message'            => $exception->getMessage(),
-        ]);
+            Log::error('Scholar: Sync job permanently failed', [
+                'scholar_profile_id' => $this->scholarProfileId,
+                'author_id'          => $profile->scholar_author_id,
+                'message'            => $exception->getMessage(),
+                'attempt'            => $this->attempts(),
+            ]);
+        }
     }
 }

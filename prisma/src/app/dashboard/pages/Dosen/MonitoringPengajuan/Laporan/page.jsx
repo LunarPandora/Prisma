@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import { useUserStore } from "@/app/stores/useUserStore";
 
 import { getModuleAccess } from "@/app/component/Libraries/utils/menu";
 
 import { useQueryBuilder } from "@/app/component/Libraries/hooks/useQueryBuilder";
-import useHighlight from "@/app/component/Libraries/hooks/useHighlight";
 
 import CustomTable from "@/app/component/Table/CustomTable";
 import { formatIndonesianDate } from "@/app/component/Libraries/utils/date";
@@ -20,7 +19,7 @@ import TextTag from "@/app/component/Tags/TextTag";
 import Badge, { StatusBadge } from "@/app/component/Display/Badge";
 import { LAPORAN_STATUS_COLORS, LAPORAN_KODE_COLORS, KODE_KEGIATAN_SHORT_LABELS, JENIS_PENELITIAN_COLORS, buildLaporanTabs } from "@/app/component/Libraries/config/statusColors";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faExclamationTriangle, faCircleCheck, faCircleHalfStroke } from "@fortawesome/free-solid-svg-icons";
 import { createLaporanDosenMenus } from "@/app/component/Libraries/config/Laporan/LaporanDosenMenu";
 import LogbookViewDosen from "./LogbookView";
 import PublikasiForm from "./PublikasiForm";
@@ -29,7 +28,7 @@ import SitasiForm from "./SitasiForm";
 import { fetchSettings } from "@/app/component/Libraries/api/settings";
 import SelectInput from "@/app/component/Inputs/SelectInput";
 
-export default function MonitoringPenelitianLaporan({ skema, onBack, highlightId, initialTab, initialJenis }){
+export default function MonitoringPenelitianLaporan({ skema, onBack, highlightId, initialTab, initialJenis, onHighlightComplete }){
     const defaultForm = {
         // search: "",
         // kegiatan_id: "",
@@ -43,17 +42,6 @@ export default function MonitoringPenelitianLaporan({ skema, onBack, highlightId
 
     const [refreshKey, setRefreshKey] = useState(0)
     const [tempLaporan, setTempLaporan] = useState({})
-
-    const highlight = useHighlight(2000)
-
-    useEffect(() => {
-        if (highlightId) {
-            const timer = setTimeout(() => {
-                highlight(`row-${highlightId}`, { scroll: true })
-            }, 500)
-            return () => clearTimeout(timer)
-        }
-    }, [highlightId, highlight, refreshKey])
 
     const [showLogbookModal, setShowLogbookModal] = useState(false)
     const [showAddLogbookModal, setShowAddLogbookModal] = useState(false)
@@ -88,28 +76,25 @@ export default function MonitoringPenelitianLaporan({ skema, onBack, highlightId
 
     const tabs = useMemo(() => buildLaporanTabs(typeFilter), [typeFilter])
 
-    const tabMaxActions = useMemo(() => ({
-        PROSES_PENELITIAN: 3,
-        PROSES_PKM: 3,
-        PUBLIKASI: 1,
-        DISEMINASI: 1,
-        CLAIM_DANA: 1,
-        PENGEMBALIAN_DANA: 1,
-        LUARAN: 1,
-        SELESAI: 1,
-    }), [])
-
     const [activeTab, setActiveTab] = useState("PROSES_PENELITIAN")
     const [settings, setSettings] = useState(null)
 
+    const initialAppliedRef = useRef(false)
+    const prevTypeFilterRef = useRef(typeFilter)
+
     useEffect(() => {
         if (initialTab) setActiveTab(initialTab)
+        initialAppliedRef.current = true
     }, [initialTab])
 
     // Reset activeTab when typeFilter changes to keep view consistent
+    // Skip on initial mount — initialTab handles that
     useEffect(() => {
-        if (!initialTab && !initialJenis) setActiveTab(tabs[0]?.key || "PROSES_PENELITIAN")
-    }, [typeFilter])
+        if (!initialAppliedRef.current) return
+        if (prevTypeFilterRef.current === typeFilter) return
+        prevTypeFilterRef.current = typeFilter
+        setActiveTab(tabs[0]?.key || "PROSES_PENELITIAN")
+    }, [typeFilter, tabs])
 
     useEffect(() => {
         fetchSettings().then(setSettings).catch(() => {})
@@ -191,10 +176,10 @@ export default function MonitoringPenelitianLaporan({ skema, onBack, highlightId
         const itemTabMap = {
             "Cek Logbook": ["PROSES_PENELITIAN", "PROSES_PKM"],
             "Selesaikan Laporan": ["PROSES_PENELITIAN", "PROSES_PKM"],
-            "Publikasi": ["PUBLIKASI"],
-            "Upload Bukti Terima Claim Dana": ["CLAIM_DANA"],
+            "Publikasi": ["PUBLIKASI", "PUBLIKASI_PKM"],
+            "Upload Bukti Terima Claim Dana": ["CLAIM_DANA", "CLAIM_DANA_PKM"],
             "Upload Bukti Pengembalian Dana": ["PENGEMBALIAN_DANA"],
-            "Kelola Sitasi": ["LUARAN_PENELITIAN", "LUARAN_PKM"],
+            "Kelola Sitasi": ["LUARAN", "LUARAN_PENELITIAN", "LUARAN_PKM"],
         }
         const allItems0 = menus.row[0]?.items ?? []
         const filtered0 = allItems0.filter(item => {
@@ -212,16 +197,16 @@ export default function MonitoringPenelitianLaporan({ skema, onBack, highlightId
         const itemTabMap = {
             "Cek Logbook": ["PROSES_PENELITIAN", "PROSES_PKM"],
             "Selesaikan Laporan": ["PROSES_PENELITIAN", "PROSES_PKM"],
-            "Publikasi": ["PUBLIKASI"],
-            "Upload Bukti Terima Claim Dana": ["CLAIM_DANA"],
+            "Publikasi": ["PUBLIKASI", "PUBLIKASI_PKM"],
+            "Upload Bukti Terima Claim Dana": ["CLAIM_DANA", "CLAIM_DANA_PKM"],
             "Upload Bukti Pengembalian Dana": ["PENGEMBALIAN_DANA"],
-            "Kelola Sitasi": ["LUARAN_PENELITIAN", "LUARAN_PKM"],
+            "Kelola Sitasi": ["LUARAN", "LUARAN_PENELITIAN", "LUARAN_PKM"],
         }
-        const allItems = menus.row[0]?.items ?? []
-        return allItems.filter(item => {
-            const tabKeys = itemTabMap[item.text]
-            return tabKeys?.includes(activeTab)
-        })
+        const group0Items = (menus.row?.[0]?.items ?? [])
+            .filter(item => itemTabMap[item.text]?.includes(activeTab))
+        const group1Items = (menus.row?.[1]?.items ?? [])
+            .map(a => ({ ...a, hidden: (r) => !(a.enabled ? a.enabled(r) : true) }))
+        return [...group0Items, ...group1Items]
     }, [menus, activeTab])
 
     function handleViewLogbook(r){
@@ -441,10 +426,11 @@ export default function MonitoringPenelitianLaporan({ skema, onBack, highlightId
                     className="w-full"
                     roundedStyle="rounded-lg rounded-tl-none"
                     onContextRequest={(e, type, data, source) => openMenu(e, type, data, source)}
-                    maxActions={tabMaxActions[activeTab] ?? 1}
                     rowActions={rowActions}
                     onRefresh={refreshTable}
                     rowHighlightKey="laporan_id"
+                    highlightId={highlightId}
+                    onHighlightComplete={onHighlightComplete}
                     columns={[  
                         {
                             header: "Jenis",
@@ -519,8 +505,8 @@ export default function MonitoringPenelitianLaporan({ skema, onBack, highlightId
                                         <Badge color={LAPORAN_KODE_COLORS[label] || 'gray'} size="sm" className="w-fit">
                                             {label}
                                         </Badge>
-                                        <Badge color={LAPORAN_STATUS_COLORS[row.status]?.color || 'gray'} size="sm" intensity="light" className="w-fit">
-                                            {row.status || "-"}
+                                        <Badge color={LAPORAN_STATUS_COLORS[row.status?.toLowerCase()]?.color || 'gray'} size="sm" className="w-fit">
+                                            {LAPORAN_STATUS_COLORS[row.status?.toLowerCase()]?.label || row.status || "-"}
                                         </Badge>
                                     </div>
                                 )
@@ -536,39 +522,32 @@ export default function MonitoringPenelitianLaporan({ skema, onBack, highlightId
                         },
                         ...(activeTab === "DISEMINASI" ? [{
                             header: "Reviewer", 
-                            key: "nama_reviewer",
+                            key: "penugasan",
                             width: "18%",
-                            render: (value, row) => {
-                                if(row.members.length > 0){
+                            render: (value) => {
+                                if (!value?.length) {
                                     return (
-                                        <div className="grid grid-cols-1 gap-1">
-                                            {
-                                                row.members.map((p, i) => (
-                                                    <span className="relative" key={i}>
-                                                        <div className="flex items-center gap-2 text-xs peer">
-                                                            <Image
-                                                                src={`${p.avatar}`}
-                                                                alt={p.nama}
-                                                                width={25}
-                                                                height={25}
-                                                                className="relative rounded-full peer"
-                                                                unoptimized
-                                                            />
-                                                            <p className="peer truncate">{p.nama}</p>
-                                                        </div>
-                                                        
-                                                        <span className="absolute -top-7 bg-white shadow-lg opacity-0 peer-hover:opacity-100 rounded-md text-black text-xs px-2 py-1 transition-opacity duration-200 ease-in-out">{p.nama}</span>
-                                                    </span>
-                                                ))
-                                            }
-                                        </div>
+                                        <span className="text-sm italic text-gray-500">
+                                            Belum ditugaskan
+                                        </span>
                                     )
                                 }
-                                else{
-                                    return (
-                                        <span className="text-sm italic text-gray-500">Tidak ada anggota.</span>
-                                    )
-                                }
+                                return (
+                                    <div className="grid grid-cols-1 gap-1">
+                                        {value.map((p, i) => (
+                                            <div key={i} className="flex items-center gap-2 text-xs">
+                                                {p.status_review === "Telah direview" ? (
+                                                    <FontAwesomeIcon icon={faCircleCheck} className="text-green-600" />
+                                                ) : (
+                                                    <FontAwesomeIcon icon={faCircleHalfStroke} className="text-yellow-600" />
+                                                )}
+                                                <span className="truncate">
+                                                    {p.reviewer?.nama || "-"}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )
                             }
                         }] : []),
                         // { 

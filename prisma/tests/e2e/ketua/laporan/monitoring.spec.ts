@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../../helpers/evidence'
 import { FRONTEND_URL, waitForDashboard } from '../../helpers/navigation'
 
 test.describe('Ketua LPPM - Laporan Monitoring', () => {

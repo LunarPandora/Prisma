@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import SelectInput from "@/app/component/Inputs/SelectInput";
-import { faFile, faSearch, faSquarePollVertical, faEdit, faTrashCan, faPlus, faFileUpload, faFilePdf, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faFile, faEye, faSearch, faSquarePollVertical, faEdit, faTrashCan, faPlus, faFileUpload, faFilePdf, faExclamationTriangle, faCircleCheck, faCircleHalfStroke } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useUserStore } from "@/app/stores/useUserStore";
 
@@ -12,7 +12,6 @@ import { getModuleAccess } from "@/app/component/Libraries/utils/menu";
 import { deleteProposal, getProposal } from "@/app/component/Libraries/api/proposal";
 import { fetchAllKegiatan } from "@/app/component/Libraries/api/kegiatan";
 import { useQueryBuilder } from "@/app/component/Libraries/hooks/useQueryBuilder";
-import useHighlight from "@/app/component/Libraries/hooks/useHighlight";
 
 import CustomTable from "@/app/component/Table/CustomTable";
 import { formatIndonesianDate } from "@/app/component/Libraries/utils/date";
@@ -26,13 +25,13 @@ import { useContextMenu } from "@/app/component/Libraries/hooks/useContextMenu";
 import LoadingBar from "@/app/component/AppLoader/LoadingBar";
 import Badge, { StatusBadge } from "@/app/component/Display/Badge";
 import { PROPOSAL_STATUS_COLORS, KODE_KEGIATAN_SHORT_LABELS, LAPORAN_KODE_COLORS, JENIS_PENELITIAN_COLORS } from "@/app/component/Libraries/config/statusColors";
-import FormProposalViewDosen from "./ProposalViewForm";
+import FormProposalViewAdmin from "@/app/dashboard/pages/Admin/MonitoringPengajuan/Proposal/ProposalViewForm";
 import FormProposal from "./ProposalForm";
 import FormProposalUpload from "./ProposalUploadForm";
 import TextTag from "@/app/component/Tags/TextTag";
 
 
-export default function MonitoringProgressProposal({ skema, onBack, highlightId, initialTab, initialJenis }){
+export default function MonitoringProgressProposal({ skema, onBack, highlightId, initialTab, initialJenis, onHighlightComplete }){
     const defaultForm = {
         search: "",
         kegiatan_id: "",
@@ -54,17 +53,6 @@ export default function MonitoringProgressProposal({ skema, onBack, highlightId,
     const [tempRowData, setTempRowData] = useState({})
 
     const [loadingForm, setLoadingForm] = useState(false)
-
-    const highlight = useHighlight(2000)
-
-    useEffect(() => {
-        if (highlightId) {
-            const timer = setTimeout(() => {
-                highlight(`row-${highlightId}`, { scroll: true })
-            }, 500)
-            return () => clearTimeout(timer)
-        }
-    }, [highlightId, highlight, refreshKey])
 
     const user = useUserStore(state => state.user)
     const access = getModuleAccess("dosenmonitoringprogress", user?.role)
@@ -280,15 +268,18 @@ export default function MonitoringProgressProposal({ skema, onBack, highlightId,
                     className="w-full"
                     roundedStyle="rounded-lg rounded-tl-none"
                     onContextRequest={(e, type, data, source) => openMenu(e, type, data, source)}
-                    maxActions={3}
                     onRefresh={refreshTable}
                     rowHighlightKey="proposal_id"
+                    highlightId={highlightId}
+                    onHighlightComplete={onHighlightComplete}
                     rowActions={[
-                        { icon: faEdit, text: "Edit", action: handleEditG, enabled: (r) => r.status === "Draft" },
-                        { icon: faFileUpload, text: "Upload", action: handleUpload, enabled: (r) => r.status === "Menunggu proposal untuk diupload" },
-                        { icon: faTrashCan, text: "Hapus", action: handleRemoveG, enabled: (r) => ["Draft", "Menunggu proposal untuk diupload"].includes(r.status), danger: true },
-                        { icon: faEdit, text: "Perbaiki", action: handleEditG, enabled: (r) => r.status === "Revisi" },
-                        { icon: faExclamationTriangle, text: "Penolakan", action: handleViewRejection, enabled: (r) => r.status === "Ditolak" }
+                        { icon: faEdit, text: "Edit proposal", action: handleEditG, enabled: (r) => r.status === "Draft", hidden: (r) => r.status !== "Draft" },
+                        { icon: faFileUpload, text: "Upload proposal", action: handleUpload, enabled: (r) => r.status === "Menunggu proposal untuk diupload", hidden: (r) => r.status !== "Menunggu proposal untuk diupload" },
+                        { icon: faTrashCan, text: "Hapus proposal", action: handleRemoveG, enabled: (r) => ["Draft", "Menunggu proposal untuk diupload"].includes(r.status), hidden: (r) => !["Draft", "Menunggu proposal untuk diupload"].includes(r.status), danger: true },
+                        { icon: faEdit, text: "Perbaiki proposal", action: handleEditG, hidden: (r) => r.status !== "Revisi" },
+                        { icon: faTrashCan, text: "Hapus proposal", action: handleRemoveG, hidden: (r) => r.status !== "Revisi", danger: true },
+                        { icon: faEye, text: "Cek proposal", action: handleView },
+                        { icon: faExclamationTriangle, text: "Lihat alasan penolakan", action: handleViewRejection, hidden: (r) => r.status !== "Ditolak" }
                     ]}
                     headerRight={
                         <button
@@ -410,6 +401,11 @@ export default function MonitoringProgressProposal({ skema, onBack, highlightId,
                                                                 unoptimized
                                                             />
                                                             <p className="peer truncate">{p.reviewer.nama}</p>
+                                                            {p.status_review === "Telah direview" ? (
+                                                                <FontAwesomeIcon icon={faCircleCheck} className="text-green-600 text-xs" />
+                                                            ) : (
+                                                                <FontAwesomeIcon icon={faCircleHalfStroke} className="text-yellow-500 text-xs" />
+                                                            )}
                                                         </div>
                                                         
                                                         <span className="absolute -top-7 bg-white shadow-lg opacity-0 peer-hover:opacity-100 rounded-md text-black text-xs px-2 py-1 transition-opacity duration-200 ease-in-out">{p.reviewer.nama}</span>
@@ -492,7 +488,7 @@ export default function MonitoringProgressProposal({ skema, onBack, highlightId,
 
             <AnimatePresence>
                 {viewProposalModal && (
-                    <FormProposalViewDosen
+                    <FormProposalViewAdmin
                         close={() => setViewProposalModal(false)}
                         data={tempRowData}
                     />

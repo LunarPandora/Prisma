@@ -239,7 +239,7 @@ class ProposalDocumentController extends Controller
             ->first();
 
             $proposal->update([
-                'status' => 'Menunggu review dari Ketua LPPM',
+                'status' => 'Menunggu review Staff LPPM',
                 'kegiatan_id' => $seleksiKegiatan
                     ? $seleksiKegiatan->kegiatan_id
                     : $proposal->kegiatan_id,

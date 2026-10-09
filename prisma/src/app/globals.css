@@ -7,8 +7,6 @@
   --foreground: #232323;
   --primary: #0197CA;
   --secondary: #026b93;
-
-  --secondary-cal: #FFFA;
 }
 
 @theme {
@@ -23,58 +21,51 @@
 
 .rdp-root{
   --rdp-accent-color: var(--primary);
-  --rdp-range_start-background: var(--secondary-cal);
-  --rdp-range_end-background: var(--secondary-cal);
+  --rdp-range_middle-background-color: #0197CA25;
+  --rdp-range_start-background: transparent;
+  --rdp-range_end-background: transparent;
+  --rdp-range_start-date-background-color: var(--primary);
+  --rdp-range_end-date-background-color: var(--primary);
   --rdp-range_middle-color: black;
 }
 
-.rdp-day.rdp-selected.rdp-range_start, 
-.rdp-day.rdp-selected.rdp-range_start:has(.rdp-today){
+.rdp-day.rdp-selected.rdp-range_start{
   border-radius: 50% 0 0 50%;
 }
 
-.rdp-day.rdp-selected.rdp-range_end:first-child, .rdp-day.rdp-selected.rdp-range_start:last-child{
-  border-radius: 50% !important;
-}
-
-.rdp-day.rdp-selected.rdp-range_middle{
-  background: var(--secondary-cal);
-}
-
-.rdp-day.rdp-selected.rdp-range_middle:first-child{
-  border-radius: 50% 0 0 50%;
-}
-
-.rdp-day.rdp-selected.rdp-range_middle:last-child{
+.rdp-day.rdp-selected.rdp-range_end{
   border-radius: 0 50% 50% 0;
 }
 
-.rdp-day.rdp-selected.rdp-range_end, .rdp-day.rdp-selected.rdp-range_end:has(.rdp-today){
-  border-radius: 0 50% 50% 0;
-}
-
-.rdp-today.rdp-selected.rdp-range_start, .rdp-today.rdp-selected.rdp-range_end{
-  background: var(--secondary-cal) !important;
-}
-
-.rdp-today.rdp-selected.rdp-range_middle{
-  border-radius: 0%;
-}
-
-.rdp-today.rdp-selected.rdp-range_middle > .rdp-day_button{
-  color: var(--color-secondary);
-}
-
-.rdp-today:not(.rdp-outside){
-  color: white;
-  background-color: var(--color-secondary);
+.rdp-day.rdp-selected.rdp-range_start.rdp-range_end{
   border-radius: 50%;
+}
+
+.rdp-today.rdp-selected.rdp-range_start,
+.rdp-today.rdp-selected.rdp-range_end{
+  background: transparent !important;
+}
+
+.rdp-today:not(.rdp-selected):not(.rdp-outside):not(.rdp-range_middle):not(.rdp-range_start):not(.rdp-range_end){
+  color: var(--primary);
   font-weight: 600;
+}
+
+.rdp-today:not(.rdp-selected):not(.rdp-outside) > .rdp-day_button::after{
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--primary);
 }
 
 .rdp-month_grid {
   border-collapse: separate;
-  border-spacing: 0 5px; /* horizontal vertical */
+  border-spacing: 0 2px;
 }
 
 /* @media (prefers-color-scheme: dark) {

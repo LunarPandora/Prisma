@@ -19,6 +19,7 @@ import SelectInput from "@/app/component/Inputs/SelectInput"
 import Button from "@/app/component/Inputs/Button"
 import DatePicker from "@/app/component/Inputs/DatePicker"
 import Modal from "@/app/component/Modal/Modal"
+import Alert from "@/app/component/Alert/Alert"
 import { showToast } from "@/app/component/Toast/Toast"
 import { useFormSubmission } from "@/app/component/Libraries/hooks/useFormSubmission"
 
@@ -108,6 +109,7 @@ export default function PublikasiForm({
     const [loadingMembers, setLoadingMembers] = useState(false)
 
     const [showRealisasiAnggaran, setShowRealisasiAnggaran] = useState(false)
+    const [showConfirmSubmit, setShowConfirmSubmit] = useState(false)
 
     const [step1Done, setStep1Done] = useState(
         !!detail.judul_penelitian
@@ -434,14 +436,14 @@ export default function PublikasiForm({
                         <Button variant="secondary" onClick={close}>
                             Batal
                         </Button>
-                        <Button onClick={handleSubmit} disabled={submitLoading || (!selectedFile && !selectedExistingFile)}>
-                            {submitLoading ? "Mengirim..." : "Submit Publikasi"}
-                        </Button>
+                    <Button onClick={() => setShowConfirmSubmit(true)} disabled={submitLoading || (!selectedFile && !selectedExistingFile)}>
+                        {submitLoading ? "Mengirim..." : "Submit Publikasi"}
+                    </Button>
                     </>
                 }
             >
                 {/* STEP INDICATORS */}
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm pb-4">
                     <div className={`flex items-center gap-1 ${step1Done ? "text-green-600" : "text-gray-400"}`}>
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${step1Done ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}`}>
                             {step1Done ? <FontAwesomeIcon icon={faCheck} className="text-[10px]" /> : "1"}
@@ -449,21 +451,36 @@ export default function PublikasiForm({
                         <span>Simpan Data</span>
                     </div>
                     <span className="text-gray-300">—</span>
+                    <div className="flex items-center gap-1 text-gray-400">
+                        <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs bg-gray-100 text-gray-400">
+                            2
+                        </span>
+                        <span>Anggota</span>
+                    </div>
+                    <span className="text-gray-300">—</span>
+                    <div className="flex items-center gap-1 text-gray-400">
+                        <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs bg-gray-100 text-gray-400">
+                            3
+                        </span>
+                        <span>Realisasi</span>
+                    </div>
+                    <span className="text-gray-300">—</span>
                     <div className={`flex items-center gap-1 ${step2Done ? "text-green-600" : "text-gray-400"}`}>
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${step2Done ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}`}>
                             {step2Done ? <FontAwesomeIcon icon={faCheck} className="text-[10px]" /> : "4"}
                         </span>
-                        <span>Generate Template</span>
+                        <span>Generate</span>
                     </div>
                     <span className="text-gray-300">—</span>
                     <div className={`flex items-center gap-1 ${selectedFile ? "text-green-600" : "text-gray-400"}`}>
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${selectedFile ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}`}>
                             {selectedFile ? <FontAwesomeIcon icon={faCheck} className="text-[10px]" /> : "5"}
                         </span>
-                        <span>Upload Final</span>
+                        <span>Upload</span>
                     </div>
                 </div>
 
+                <div className="flex flex-col gap-5">
                 {/* STEP 1: INFORMASI PENELITIAN */}
                 <div className="flex flex-col gap-2 border rounded-lg p-4">
                     <div className="flex items-center gap-2">
@@ -824,6 +841,7 @@ export default function PublikasiForm({
                         onChange={(e) => setLinkLuaranDrive(e.target.value)}
                     />
                 </div>
+                </div>
             </Modal>
 
             {/* REALISASI ANGGARAN MODAL */}
@@ -832,6 +850,22 @@ export default function PublikasiForm({
                     close={() => setShowRealisasiAnggaran(false)}
                     refresh={refresh}
                     laporan={laporan}
+                />
+            )}
+
+            {showConfirmSubmit && (
+                <Alert
+                    alertType="warning"
+                    title="Submit Publikasi"
+                    msg="Apakah Anda yakin ingin submit publikasi ini? Laporan akan masuk tahap review."
+                    onCancel={() => setShowConfirmSubmit(false)}
+                    onAccept={() => {
+                        handleSubmit()
+                    }}
+                    acceptText="Submit"
+                    isConfirmation={true}
+                    withBackground={true}
+                    loading={submitLoading}
                 />
             )}
         </>

@@ -98,6 +98,8 @@ export async function pickSelectOption(page: Page, placeholder: string, optionTe
   await input.click()
   await page.waitForTimeout(300)
 
+  await input.fill('')
+
   const filterText = optionText.slice(0, Math.min(8, optionText.length))
   await input.pressSequentially(filterText, { delay: 50 })
   await page.waitForTimeout(500)

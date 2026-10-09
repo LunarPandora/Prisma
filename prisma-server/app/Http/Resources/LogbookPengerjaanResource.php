@@ -18,6 +18,7 @@ class LogbookPengerjaanResource extends JsonResource
             'deskripsi'  => $this->deskripsi,
 
             'tgl_kegiatan' => $this->tgl_kegiatan,
+            'tgl_kegiatan_end' => $this->tgl_kegiatan_end,
 
             'lampiran_drive_id'  => $this->lampiran_drive_id,
             'lampiran_drive_url' => $this->lampiran_drive_url,

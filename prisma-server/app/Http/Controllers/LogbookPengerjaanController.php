@@ -105,6 +105,7 @@ class LogbookPengerjaanController extends Controller
                 'judul'               => 'required|string|max:255',
                 'deskripsi'           => 'required|string',
                 'tgl_kegiatan'        => 'required|date',
+                'tgl_kegiatan_end'    => 'nullable|date|after_or_equal:tgl_kegiatan',
                 'lampiran_drive_id'   => 'nullable|string',
                 'lampiran_drive_url'  => 'nullable|string',
             ]);
@@ -198,6 +199,7 @@ class LogbookPengerjaanController extends Controller
                 'judul'               => 'sometimes|string|max:255',
                 'deskripsi'           => 'sometimes|string',
                 'tgl_kegiatan'        => 'sometimes|date',
+                'tgl_kegiatan_end'    => 'nullable|date|after_or_equal:tgl_kegiatan',
                 'lampiran_drive_id'   => 'nullable|string',
                 'lampiran_drive_url'  => 'nullable|string',
             ]);

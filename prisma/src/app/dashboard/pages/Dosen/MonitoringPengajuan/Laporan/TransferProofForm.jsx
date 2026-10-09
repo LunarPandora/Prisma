@@ -6,6 +6,7 @@ import { faCloudArrowUp, faSpinner } from "@fortawesome/free-solid-svg-icons"
 
 import Button from "@/app/component/Inputs/Button"
 import Modal from "@/app/component/Modal/Modal"
+import Alert from "@/app/component/Alert/Alert"
 import { showToast } from "@/app/component/Toast/Toast"
 import { useFormSubmission } from "@/app/component/Libraries/hooks/useFormSubmission"
 
@@ -21,6 +22,7 @@ export default function TransferProofForm({
     mode = "claim",
 }) {
     const [file, setFile] = useState(null)
+    const [showConfirm, setShowConfirm] = useState(false)
 
     const { loading, submit } = useFormSubmission({
         onSuccess: () => { refresh(); close() }
@@ -52,6 +54,7 @@ export default function TransferProofForm({
     }
 
     return (
+        <>
         <Modal
             isOpen={true}
             onClose={close}
@@ -63,7 +66,7 @@ export default function TransferProofForm({
                     <Button variant="secondary" onClick={close}>
                         Batal
                     </Button>
-                    <Button onClick={handleSubmit} disabled={!file || loading}>
+                    <Button onClick={() => setShowConfirm(true)} disabled={!file || loading}>
                         {loading ? (
                             <>
                                 <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" />
@@ -118,5 +121,22 @@ export default function TransferProofForm({
                 onChange={(e) => setFile(e.target.files[0] || null)}
             />
         </Modal>
+
+        {showConfirm && (
+            <Alert
+                alertType="warning"
+                title={title}
+                msg={`Apakah Anda yakin ingin mengupload bukti ${mode === "claim" ? "penerimaan" : "pengembalian"} dana ini?`}
+                onCancel={() => setShowConfirm(false)}
+                onAccept={() => {
+                    handleSubmit()
+                }}
+                acceptText="Upload"
+                isConfirmation={true}
+                withBackground={true}
+                loading={loading}
+            />
+        )}
+        </>
     )
 }

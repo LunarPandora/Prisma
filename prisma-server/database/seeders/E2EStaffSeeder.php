@@ -31,89 +31,116 @@ class E2EStaffSeeder extends Seeder
         $prodiKW = Prodi::create(['nama_prodi' => 'Kewirausahaan']);
 
         // ── Users ──
-        $superadmin = User::create([
-            'nama' => 'Superadmin', 'email' => 'superadmin@itbss.ac.id',
+        $superadmin = User::firstOrCreate(
+            ['email' => 'superadmin@itbss.ac.id'],
+            [
+'nama' => 'Superadmin',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Superadmin', 'status' => 'Aktif', 'gender' => 'L',
             'no_hp' => '081234567890', 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $ketua = User::create([
-            'nama' => 'Ketua LPPM', 'email' => 'ketua.lppm@itbss.ac.id',
+        $ketua = User::firstOrCreate(
+            ['email' => 'ketua.lppm@itbss.ac.id'],
+            [
+'nama' => 'Ketua LPPM',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Ketua LPPM', 'status' => 'Aktif', 'gender' => 'P',
             'nidn' => '10001', 'no_hp' => '081234567891',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $staff1 = User::create([
-            'nama' => 'Staff LPPM 1', 'email' => 'staff.lppm1@itbss.ac.id',
+        $staff1 = User::firstOrCreate(
+            ['email' => 'staff.lppm1@itbss.ac.id'],
+            [
+'nama' => 'Staff LPPM 1',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Staff LPPM', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '10002', 'no_hp' => '081234567892',
             'prodi_id' => $prodiBD->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $staff2 = User::create([
-            'nama' => 'Staff LPPM 2', 'email' => 'staff.lppm2@itbss.ac.id',
+        $staff2 = User::firstOrCreate(
+            ['email' => 'staff.lppm2@itbss.ac.id'],
+            [
+'nama' => 'Staff LPPM 2',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Staff LPPM', 'status' => 'Aktif', 'gender' => 'P',
             'nidn' => '10003', 'no_hp' => '081234567893',
             'prodi_id' => $prodiKW->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $dosenA = User::create([
-            'nama' => 'Dosen A', 'email' => 'dosen.a@itbss.ac.id',
+        $dosenA = User::firstOrCreate(
+            ['email' => 'dosen.a@itbss.ac.id'],
+            [
+'nama' => 'Dosen A',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '20001', 'no_hp' => '081234567894',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $dosenB = User::create([
-            'nama' => 'Dosen B', 'email' => 'dosen.b@itbss.ac.id',
+        $dosenB = User::firstOrCreate(
+            ['email' => 'dosen.b@itbss.ac.id'],
+            [
+'nama' => 'Dosen B',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Dosen', 'status' => 'Aktif', 'gender' => 'P',
             'nidn' => '20002', 'no_hp' => '081234567895',
             'prodi_id' => $prodiBD->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $reviewerA = User::create([
-            'nama' => 'Reviewer A', 'email' => 'reviewer.a@itbss.ac.id',
+        $reviewerA = User::firstOrCreate(
+            ['email' => 'reviewer.a@itbss.ac.id'],
+            [
+'nama' => 'Reviewer A',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Reviewer', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '30001', 'no_hp' => '081234567897',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $reviewerB = User::create([
-            'nama' => 'Reviewer B', 'email' => 'reviewer.b@itbss.ac.id',
+        $reviewerB = User::firstOrCreate(
+            ['email' => 'reviewer.b@itbss.ac.id'],
+            [
+'nama' => 'Reviewer B',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Reviewer', 'status' => 'Aktif', 'gender' => 'P',
             'nidn' => '30002', 'no_hp' => '081234567898',
             'prodi_id' => $prodiBD->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
-        $reviewerC = User::create([
-            'nama' => 'Reviewer C', 'email' => 'reviewer.c@itbss.ac.id',
+        $reviewerC = User::firstOrCreate(
+            ['email' => 'reviewer.c@itbss.ac.id'],
+            [
+'nama' => 'Reviewer C',
             'email_verified_at' => $now, 'password' => Hash::make('password'),
             'role' => 'Reviewer', 'status' => 'Aktif', 'gender' => 'L',
             'nidn' => '30003', 'no_hp' => '081234567899',
             'prodi_id' => $prodiTI->prodi_id, 'remember_token' => Str::random(10),
-        ]);
+            ]
+        );
 
         // ── Settings ──
         Settings::create([
             'kepala_lppm' => $ketua->id,
-            'kriteria_penilaian' => json_encode([
+            'kriteria_penilaian' => [
                 ['kriteria' => 'Kesesuaian Tema', 'bobot' => 30],
                 ['kriteria' => 'Metodologi', 'bobot' => 30],
                 ['kriteria' => 'Timeline', 'bobot' => 20],
                 ['kriteria' => 'Anggaran', 'bobot' => 20],
-            ]),
-            'list_kesesuaian_tema' => json_encode([
+            ],
+            'list_kesesuaian_tema' => [
                 'SDGs', 'Teknologi', 'Kesehatan', 'Pendidikan',
-            ]),
+            ],
             'ignore_kegiatan_dates' => true,
         ]);
 
@@ -204,7 +231,7 @@ class E2EStaffSeeder extends Seeder
             'skema' => 'Internal',
             'sumber_skema' => 'Dana Internal',
             'status' => 'Menunggu review Staff LPPM',
-            'ketua_seleksi_approved' => true,
+            'ketua_seleksi_approved' => false,
             'staff_seleksi_approved' => false,
             'user_id' => $dosenA->id,
             'kegiatan_id' => $kegiatanSeleksi->kegiatan_id,

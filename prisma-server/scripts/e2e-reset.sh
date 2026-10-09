@@ -31,7 +31,10 @@ mysql -u root -padmin123 -e "CREATE DATABASE IF NOT EXISTS prisma_e2e_testing CH
 }
 
 # Select seeder based on role
-if [ "$ROLE" = "dosen" ]; then
+if [ "$ROLE" = "all" ]; then
+    SEEDER="E2EUnifiedSeeder"
+    echo "Running migrate:fresh with E2EUnifiedSeeder (all roles)..."
+elif [ "$ROLE" = "dosen" ]; then
     SEEDER="E2EDosenSeeder"
     echo "Running migrate:fresh with E2EDosenSeeder..."
 elif [ "$ROLE" = "ketua" ]; then
@@ -58,7 +61,14 @@ echo "════════════════════════�
 echo ""
 echo "Test database: prisma_e2e_testing"
 
-if [ "$ROLE" = "dosen" ]; then
+if [ "$ROLE" = "all" ]; then
+    echo "All E2E accounts created:"
+    echo "  Staff:       staff.lppm1@itbss.ac.id / password"
+    echo "  Dosen:       dosen.e2e@itbss.ac.id / password"
+    echo "  Ketua:       ketua.lppm@itbss.ac.id / password"
+    echo "  Reviewer:    reviewer.e2e@itbss.ac.id / password"
+    echo "  Superadmin:  superadmin.e2e@itbss.ac.id / password"
+elif [ "$ROLE" = "dosen" ]; then
     echo "Dosen E2E credentials:"
     echo "  Email: dosen.e2e@itbss.ac.id"
     echo "  Password: password"

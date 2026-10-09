@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../../helpers/evidence'
 import { FRONTEND_URL, waitForDashboard, navigateToModule } from '../../helpers/navigation'
 
 test.describe('Dosen Logbook', () => {

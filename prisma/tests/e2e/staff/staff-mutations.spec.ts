@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, captureApiEvidence } from '../helpers/evidence'
 import { FRONTEND_URL, waitForDashboard, navigateToModule } from '../helpers/navigation'
 
 const BACKEND = process.env.E2E_BACKEND_URL || 'http://localhost:8000'
@@ -66,7 +66,10 @@ test.describe('Staff LPPM — Mutations', () => {
 
     const proposalId = target.proposal_id
 
-    const staffRow = page.getByRole('row').filter({ hasText: 'Staff: ○ Belum' }).first()
+    const staffRow = page.getByRole('row')
+      .filter({ hasText: 'Staff: ○ Belum' })
+      .filter({ hasText: 'Menunggu review Staff LPPM' })
+      .first()
     if (!(await staffRow.isVisible({ timeout: 5000 }).catch(() => false))) {
       console.log('ST-PROP-SEL-MUT-001: Skipped — UI row not found')
       return
@@ -263,6 +266,9 @@ test.describe('Staff LPPM — Mutations', () => {
     }
 
     const apiResult = await apiPostAuthed(page, '/proposal/approve', {
+      proposal_id: ketuaTarget.proposal_id,
+    })
+    await captureApiEvidence(page, 'ST-PERM-001', 'POST', '/proposal/approve', {
       proposal_id: ketuaTarget.proposal_id,
     })
     expect(apiResult.status).toBeGreaterThanOrEqual(400)

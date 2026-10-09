@@ -1,8 +1,8 @@
 # Playwright Black-Box Test Inventory
 
 > **Source of truth:** All data below was extracted directly from the Playwright spec files in `prisma/tests/e2e/`, NOT from documentation or assumptions.
-> **Command used:** `npx playwright test --list --config=playwright.config.ts` confirmed **304 actual test cases** across 62 spec files + 5 auth setup files (309 listed items total).
-> **Date:** 2026-08-20
+> **Command used:** `npx playwright test --list --config=playwright.config.ts` confirmed **358 actual test cases** across 62 spec files + 5 auth setup files (363 listed items total).
+> **Date:** 2026-08-27
 
 ---
 
@@ -10,16 +10,16 @@
 
 | Role | Tests | Spec Files |
 | ---- | ----: | ----------: |
-| Dosen | 92 | 19 |
-| Staff LPPM | 59 | 12 |
-| Ketua LPPM | 58 | 12 |
-| Superadmin | 59 | 12 |
-| Reviewer | 36 | 7 |
-| **Total (test cases)** | **304** | **62** |
+| Dosen | 99 | 21 |
+| Staff LPPM | 66 | 14 |
+| Ketua LPPM | 62 | 14 |
+| Superadmin | 61 | 14 |
+| Reviewer | 39 | 10 |
+| **Total (test cases)** | **358** | **62** |
 
-> **Auth setup projects** (5) listed by Playwright are NOT test cases -- they are `storageState` generators. Playwright's "Total: 309 tests in 67 files" includes these 5 setup projects.
+> **Auth setup projects** (5) listed by Playwright are NOT test cases -- they are `storageState` generators. Playwright's "Total: 363 tests in 67 files" includes these 5 setup projects.
 >
-> **Baseline comparison:** The previously reported baseline was Staff=60, Dosen=93, Ketua=59, Reviewer=37, Superadmin=60 (total=309). The current suite differs by -1 per role (total=304). The discrepancy likely stems from the 5 auth setup projects being counted in the prior total, combined with a counting methodology difference for the -1 per role.
+> **Baseline comparison:** The previously reported baseline was 304 test cases. The current suite has 358 test cases, reflecting additions made during the Staff-first workflow revision and other enhancements.
 
 
 ---

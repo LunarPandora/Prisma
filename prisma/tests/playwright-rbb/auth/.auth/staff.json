@@ -1,0 +1,45 @@
+{
+  "cookies": [
+    {
+      "name": "XSRF-TOKEN",
+      "value": "eyJpdiI6IkJXTi9TK2FNYUdISDQxQW9WYlhucnc9PSIsInZhbHVlIjoiSG9tTEVzbEQzNk9mOVNKaFN0SnNnQlc1a0tqZk94dUtmbEEvM3ZxUFZpZG5VUXA0Ym9ldHZZUEJyempseWZudGtPaDZxdVBzZzhBN1hoQUErazBBMU83MWJkWE02K2FQWEtYSlBKaTJVRHJaRzZQQVl3aEI1Qmw1R2tGNm1YVVYiLCJtYWMiOiJhMDhmNjdhZTRkMzFjNTBjNDExNWZiZGNiMWZlN2VlNzk2ZTA1ZTEzMmY4NjE3NjI2ODFlZDM0MDQ4NTU4NTFhIiwidGFnIjoiIn0%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787708021.424128,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "laravel-session",
+      "value": "eyJpdiI6IkVRTjVHNGZpbVFDeSt0bzZaTlVBU0E9PSIsInZhbHVlIjoiUThBK244OFhDUzMxVkNydVIweGhjOGxJS2hFQm55YzlZVjZJTmg5SnRaZm90WjdqbVlmRTlZbHN4ZUN6cytSM29OZDNJMTFFMHEzMXVQM1lBUm9kOGFreGxtdzVteTkzM3RUSlVWRXRoL01oVTlaSHdWbTA4UE8wYVphU1FLMzIiLCJtYWMiOiJkZmVjYWViYzg4NzdjZDkzM2I3Y2QxOGE2MTEyNzBkN2I1MTAyYjhkZDlkMjhlODYzYzU5MDI2NWQxMzY3MWNmIiwidGFnIjoiIn0%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787708021.424171,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "Lm4UVZrAHqbqNhJHJW9NV3tydizmHkDjnhuvgGfy",
+      "value": "eyJpdiI6Ikx5ZWY0UzhFRXpKemVNaWZZd2hYK3c9PSIsInZhbHVlIjoiNlgzUTF6TFJCcmJMa21FVjhySjArVXFNcHlGOWxybXBHQjZkcGpVNGVwL29nMTRrTGVFNVN0RHpFMkpxaGVjTzBMMEJ0RWhubDZMZFQ5ZGxjOUxNWUFvcmRoREJNY3V4ZXg2TCtUV21UeGVVQXBUam4rV2lEdDFYVVFlSThIekpJelg1NEd3YXh5ZFVLd3NLVXR2WGkrMUo0WWIyaGd3NXpvaUQzWCtMblNZMmtjMEY0aFZnemNrQlZ1UWdSSm41T0NrUFZ2bnRIcWg0d2tiK2wzNVNYdCsvUUpjTmtiUHdFWE9JVlpwRVRZS21pcDVqQTVsYnpSeEtHaWRVRklxcGxlV2ZEWktBTnVZQU9QRnA4TTYxRDdBOVUwQ0VHTHFFa2FQbEN4bktYNEIwemwxcTZlV0xFY2J3V2FWay81a3JJRllwYXN5dWFDWTNVMFRRaVJiR1VmdEF3bjhxU1lqQnNSTFVaMlBwSS9Pa3htRVJJTGZoRUJFMEx0QWlBMFVyTCtRSHQvWEtXZFduMmZYbnpGVHBBTTd4cVRHdFh0S1Q1OHYvMlZ0YUU4djlISXNHM0tBMjJHTVJNc2lJOExTdTFqWnprMnRud0tndW9JeGp0cFRzSG4wZmx4SVB6bUNyMkJjdnhKNm9kSlYxamtDamI0bFhMTEtuZ00vbVBiN1hPTEx2NTJudE91QVFPYUdZb0xQbFBzZGRCQmZpT05VV2FYV3RCSnlveW5NPSIsIm1hYyI6ImNmNzVhODk0ODQwYzAyMjBiZGE5NTNhMjMzMmZiMmNlNThlMDE1ZGIxYmZjZDU0Y2M1NDg2OTI1YTU2NmVkYzgiLCJ0YWciOiIifQ%3D%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787708021.424193,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "user-storage",
+          "value": "{\"state\":{\"user\":{\"id\":30,\"nama\":\"Staff LPPM 1\",\"role\":\"Staff LPPM\",\"avatar\":\"http://localhost:8000/storage/avatars/default_30_9bb7baf3.webp\"}},\"version\":0}"
+        }
+      ]
+    }
+  ]
+}

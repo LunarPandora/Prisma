@@ -16,11 +16,11 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         return UserResource::collection(
             User::orderBy('id')
-                ->paginate(10, [
+                ->get([
                     'id',
                     'nama',
                     'email',

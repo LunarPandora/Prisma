@@ -19,6 +19,13 @@ class ScholarSyncService
 
     public function sync(ScholarProfile $profile): void
     {
+        $start = microtime(true);
+
+        Log::info('Scholar: Sync started', [
+            'profile_id'    => $profile->scholar_profile_id,
+            'author_id'     => $profile->scholar_author_id,
+        ]);
+
         DB::beginTransaction();
 
         try {
@@ -46,13 +53,28 @@ class ScholarSyncService
             $this->syncPublications($profile, $result['publications'] ?? []);
 
             DB::commit();
+
+            $elapsed = round((microtime(true) - $start) * 1000);
+
+            Log::info('Scholar: Sync completed successfully', [
+                'profile_id'        => $profile->scholar_profile_id,
+                'author_id'         => $profile->scholar_author_id,
+                'display_name'      => $profileData['name'] ?? null,
+                'total_citations'   => $profileData['total_citations'] ?? 0,
+                'h_index'           => $profileData['h_index'] ?? 0,
+                'publications_synced'=> count($result['publications'] ?? []),
+                'elapsed_ms'        => $elapsed,
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Log::error('Scholar sync failed', [
-                'scholar_profile_id' => $profile->scholar_profile_id,
-                'scholar_author_id'  => $profile->scholar_author_id,
-                'message'            => $e->getMessage(),
+            $elapsed = round((microtime(true) - $start) * 1000);
+
+            Log::error('Scholar: Sync failed', [
+                'profile_id' => $profile->scholar_profile_id,
+                'author_id'  => $profile->scholar_author_id,
+                'message'    => $e->getMessage(),
+                'elapsed_ms' => $elapsed,
             ]);
 
             $profile->update([

@@ -36,20 +36,28 @@ class ProposalDraftController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | Gate: PENERIMAAN_PROPOSAL kegiatan must be open (by date range).
-            |--------------------------------------------------------------------------
-            | Sanity check both here and at upload time so that a stale form
-            | held open past the deadline cannot submit a proposal.
+            | Resolve kegiatan_id from skema_id + jenis_penelitian
             |--------------------------------------------------------------------------
             */
 
-            $kegiatan = \App\Models\KegiatanPengajuan::find($request->kegiatan_id);
+            $skema = \App\Models\Skema::find($request->skema_id);
 
-            if (!$kegiatan
-                || $kegiatan->kode_kegiatan !== 'PENERIMAAN_PROPOSAL'
-            ) {
+            if (!$skema || $skema->status !== 'Aktif') {
                 return ApiResponse::failed(
-                    'Kegiatan tidak valid untuk pengajuan proposal.'
+                    'Skema pengajuan tidak valid atau tidak sedang aktif.'
+                );
+            }
+
+            $jenisPenelitian = $request->jenis_penelitian_gan ?? 'Penelitian';
+
+            $kegiatan = \App\Models\KegiatanPengajuan::where('skema_id', $skema->skema_id)
+                ->where('kode_kegiatan', 'PENERIMAAN_PROPOSAL')
+                ->where('jenis_penelitian', $jenisPenelitian)
+                ->first();
+
+            if (!$kegiatan) {
+                return ApiResponse::failed(
+                    'Kegiatan penerimaan proposal tidak ditemukan untuk skema dan jenis penelitian ini.'
                 );
             }
 
@@ -68,14 +76,6 @@ class ProposalDraftController extends Controller
             if (!$isOpen) {
                 return ApiResponse::failed(
                     'Kegiatan penerimaan proposal tidak sedang berlangsung.'
-                );
-            }
-
-            $skema = \App\Models\Skema::find($kegiatan->skema_id);
-
-            if (!$skema || $skema->status !== 'Aktif') {
-                return ApiResponse::failed(
-                    'Skema pengajuan tidak sedang aktif.'
                 );
             }
 
@@ -128,7 +128,7 @@ class ProposalDraftController extends Controller
                 'institusi_mitra'               => $request->institusi_mitra,
 
                 'user_id'                       => auth()->id(),
-                'kegiatan_id'                    => $request->kegiatan_id,
+                'kegiatan_id'                    => $kegiatan->kegiatan_id,
 
                 'skema'                         => $request->skema,
                 'sumber_skema'                  => $request->sumber_skema,
@@ -275,6 +275,19 @@ class ProposalDraftController extends Controller
                 return ApiResponse::failed('Proposal tidak ditemukan atau bukan milik Anda.');
             }
 
+            if ($request->filled('skema_id')) {
+                $jenisPenelitian = $request->jenis_penelitian_gan ?? $proposal->jenis_penelitian_gan;
+                $resolved = \App\Models\KegiatanPengajuan::where('skema_id', $request->skema_id)
+                    ->where('kode_kegiatan', 'PENERIMAAN_PROPOSAL')
+                    ->where('jenis_penelitian', $jenisPenelitian)
+                    ->first();
+                if (!$resolved) {
+                    DB::rollBack();
+                    return ApiResponse::failed('Kegiatan penerimaan proposal tidak ditemukan untuk skema ini.');
+                }
+                $proposal->update(['kegiatan_id' => $resolved->kegiatan_id]);
+            }
+
             $status = ($request->mode == 'submit')
                 ? 'Menunggu proposal untuk diupload'
                 : 'Draft';
@@ -324,7 +337,6 @@ class ProposalDraftController extends Controller
                 'institusi_mitra'              => $request->institusi_mitra,
 
                 'user_id'                      => auth()->id(),
-                'kegiatan_id'                   => $request->kegiatan_id,
 
                 'skema'                        => $request->skema,
                 'sumber_skema'                 => $request->sumber_skema,

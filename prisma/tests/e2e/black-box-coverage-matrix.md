@@ -1,7 +1,7 @@
 # PRISMA Requirements-to-Test Coverage Matrix
 
-**Date:** August 18, 2026 (Updated)
-**Source:** Derived from 309 E2E test cases across 5 roles
+**Date:** August 27, 2026 (Updated)
+**Source:** Derived from 358 E2E test cases across 5 roles
 
 ## Domain A: Authentication and Access Control
 

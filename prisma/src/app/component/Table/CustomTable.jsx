@@ -7,6 +7,7 @@ import { createPortal } from "react-dom"
 
 import { useEffect, useState, useRef, useMemo } from "react"
 import ActionButton from "./ActionButton"
+import useHighlight from "@/app/component/Libraries/hooks/useHighlight"
 
 function compareValues(a, b) {
   if (a == null && b == null) return 0
@@ -58,16 +59,18 @@ export default function CustomTable({
   roundedStyle = 'rounded-lg',
   onContextRequest,
   onRowClick,
-  maxActions = 0,
   rowActions = [],
   onRefresh,
   headerRight,
   hideActions: hideActionsProp,
   rowHighlightKey,
+  initialPage,
+  highlightId,
+  onHighlightComplete,
   ...props
 }) {
   const [data, setData] = useState([])
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(initialPage || 1)
   const [lastPage, setLastPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [failedLoading, setFailedLoading] = useState(false)
@@ -77,6 +80,9 @@ export default function CustomTable({
   const [sortDirection, setSortDirection] = useState(null)
 
   const buttonRef = useRef(null);
+  const suppressNextFetchRef = useRef(false);
+  const highlightNavigatedRef = useRef(false);
+  const highlight = useHighlight(2000)
 
   const openFromButton = (e, row) => {
     onContextRequest(e, 'row', row, 'btn');
@@ -89,11 +95,24 @@ export default function CustomTable({
         const query = new URLSearchParams(searchQuery || "")
         query.set("page", currentPage)
 
+        if (highlightId && !highlightNavigatedRef.current) {
+            query.set("highlight_id", highlightId)
+        }
+
         const res = await fetchMethod(query.toString())
         const result = res.data
 
         setData(result.data ?? [])
         setLastPage(result.meta?.last_page ?? 1)
+
+        const highlightPage = result.highlight_page ?? result.meta?.highlight_page
+        if (highlightPage && highlightPage !== currentPage) {
+            highlightNavigatedRef.current = true
+            suppressNextFetchRef.current = true
+            setPage(highlightPage)
+        } else if (!highlightPage) {
+            highlightNavigatedRef.current = true
+        }
 
     } catch (err) {
         console.error(err)
@@ -104,8 +123,25 @@ export default function CustomTable({
 }
 
   useEffect(() => {
+    highlightNavigatedRef.current = false
+  }, [highlightId])
+
+  useEffect(() => {
+    if (suppressNextFetchRef.current) {
+        suppressNextFetchRef.current = false
+        return
+    }
     fetchData(page)
   }, [refreshKey, page, searchQuery])
+
+  useEffect(() => {
+    if (!highlightId || !data.length) return
+    const timer = setTimeout(() => {
+        highlight(`row-${highlightId}`, { scroll: true })
+        onHighlightComplete?.()
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [data, highlightId, highlight, onHighlightComplete])
 
   const handleSort = (col) => {
     if (!isColumnSortable(col)) return
@@ -142,7 +178,19 @@ export default function CustomTable({
 
   const showInline = rowActions.length > 0
   const visibleActions = showInline ? rowActions.filter(a => !a.destructive) : []
-  const hideActions = hideActionsProp ?? (rowActions.length === 0 && maxActions === 0)
+
+  const hasAnyVisibleAction = useMemo(() => {
+    if (hideActionsProp) return false
+    if (visibleActions.length === 0) return false
+    return displayData.some(row =>
+      visibleActions.some(action => {
+        if (typeof action.hidden === "function" && action.hidden(row)) return false
+        return true
+      })
+    )
+  }, [displayData, visibleActions, hideActionsProp])
+
+  const hideActions = hideActionsProp ?? !hasAnyVisibleAction
   const colCount = hideActions ? columns.length : columns.length + 1
 
   return (
@@ -178,7 +226,7 @@ export default function CustomTable({
       </div>
 
       {/* Table */}
-      <div className={`bg-white border border-gray-200 ${roundedStyle} overflow-hidden`}>
+      <div className={`bg-white border border-gray-200 ${roundedStyle}`}>
         <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
@@ -228,7 +276,7 @@ export default function CustomTable({
                 })}
 
                 {!hideActions && (
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                  <th className="px-3 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap w-[1%]">
                     <div className="flex items-center gap-2">
                       <span>Aksi</span>
                       {onRefresh && (
@@ -345,7 +393,7 @@ export default function CustomTable({
                       ))}
 
                       {!hideActions && (
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-3 w-[1%]">
                           <div className="flex items-center gap-1 flex-nowrap">
                             {showInline && visibleActions
                               .filter(action => {
@@ -354,19 +402,15 @@ export default function CustomTable({
                                 }
                                 return !action.hidden
                               })
-                              .filter(action => {
-                                if (typeof action.enabled === "function") {
-                                  return action.enabled(row)
-                                }
-                                return action.enabled !== false
-                              })
-                              .slice(0, maxActions || undefined)
                               .map((action, idx) => {
                                 const responsiveClass = idx === 0
                                   ? ""
                                   : idx === 1
                                   ? "hidden md:inline-flex"
                                   : "hidden lg:inline-flex"
+                                const isEnabled = typeof action.enabled === "function"
+                                  ? action.enabled(row)
+                                  : action.enabled !== false
                                 return (
                                   <div key={idx} className={responsiveClass}>
                                     <ActionButton
@@ -374,6 +418,7 @@ export default function CustomTable({
                                       label={action.text}
                                       onClick={() => action.action(row)}
                                       danger={action.danger}
+                                      disabled={!isEnabled}
                                     />
                                   </div>
                                 )

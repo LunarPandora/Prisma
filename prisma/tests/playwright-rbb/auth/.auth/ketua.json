@@ -1,0 +1,45 @@
+{
+  "cookies": [
+    {
+      "name": "XSRF-TOKEN",
+      "value": "eyJpdiI6IlBnNExKelZkR1g4VTJGMEJtbWNxNUE9PSIsInZhbHVlIjoiRXZaeTZrVC8wQmdtK2F2ZlM3Q0ROckpTcmRpN01pSElUY2pldmlleG1JYkJlSTdiRkoycU02SHJPeWVNU0pKb2RBWHduRUMvTmJqYUtxRWtuZk9QOXhHOXNkTWkwL0VWcHpUa2lUTHdvdmhmK0R5VTU5RXB0UTNZSlIrVWVKZEsiLCJtYWMiOiJiYjJmYWU0NTc5NThhYTgwMDFlNjlmYTU2ZmYyOWNmYTg1NTkxZjY3MGM4NWI2OTk0MDc3ZjczMTAwZTE3YTM4IiwidGFnIjoiIn0%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787708022.945847,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "laravel-session",
+      "value": "eyJpdiI6IlBudjB6czl2Z1d2M3ZmQTNPc3h4N1E9PSIsInZhbHVlIjoiTzhWelR2aGxDRTVMNlJ3QWtBWnAzUGtUTk1LY1VJdzIrbHhiV3pqZjJ0U1JoSlZHcHd2UEY1MDFpdklwdnRQaEhPazhIWjlsVjFXVVltdy85WVYrTXlxUXBYZlluV2RFOVFtNTc0aFVtWUFNcWRXc0xQenlkbGh2OUNYcXlNeG4iLCJtYWMiOiJlOTVmYzBlZGZjZjAxOWRmYTg1ODI3MTcwYzdmM2YxMTk3NjViYzE3YjRjNDhmY2Y0YzYyMDAwNTIxMjY4NGFiIiwidGFnIjoiIn0%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787708022.945891,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "B9ORdGSqBgQ5jI6XkGmJfmujUzZ8nsn37VwICzBS",
+      "value": "eyJpdiI6IngyNlpkVHlkWFdkVlJNOTVscjIvVFE9PSIsInZhbHVlIjoiY2drY0IrUkVzME9iN1kzWUh6TUhocHZOQWNoa3ZwUmJmYkdSdWloQUpWY0hQRnJnNk8vUnZ4NzRldWkrOGJHMGorYy9JcmJHN05BWjNiRENVZjdQMktud3g5VFdvTXpSZFdiQWo0a3BUeXNrdXQycXlXcFUrUytnendNOXNHSmo0bVRJeTBlZ3BaMlkxNmhxRFdIU0VTcklOQXU5U3dZdGNYcmxkVjN1QmFHc0RJODdOS1FlS3hjQUxqbFlkcWhDRU5semZEZzNZQ2RDSGU0QzJybi94MGplQmRyMHJhc1NuQkVjdW5ZUFlUSktlcGRJY2FMVlRsWUpEVDNKQTJpV3ZTQklsSDUrMzMxb09rb2RLaWxuc0E5VTl5c2hmak5kME1HUzQwejdnNWJyR1RqWGhXL0t3UzVTbDVYQVMyMHpBWjRhaTkxRGRtWkdnTVVjVE41UUdsMGM4cHp5UG02L1RPVXl1ZVRNWnc5UlQvVkpzaDVHUnl3M3liQWE3UWhDQ0RROGhkNXRTSGJ3U1lTT3lVa2FISUk2TjA4aDRFT2hLdTcyNDBMUTVUenhSTkRwb2JGeGpKWXNiNDdubWpiaXhEYUhCQjN4MHc4YlVYZDJ4WlhXbWQ2Q1hrK2FVaE9FTHEwVTZvdFZFUm91UVlSM0FmTU56VlZENmxzbElGQWVaMWFmNzcvRWpoNEwxbEJ4Mml2dTZRR2ErNlZqaHBmeXVHY0tXWENQdmpNPSIsIm1hYyI6IjRmOTk1MmZjNjU5OGQ3YjJiZmIwOWY4M2YyZDA4ZmE5YjkwNWQwOTkxZDQxM2Q3ZjE3ZDBiMDk2OTI1YjExNmEiLCJ0YWciOiIifQ%3D%3D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1787708022.945925,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "user-storage",
+          "value": "{\"state\":{\"user\":{\"id\":29,\"nama\":\"Ketua LPPM\",\"role\":\"Ketua LPPM\",\"avatar\":\"http://localhost:8000/storage/avatars/default_29_3ca399f2.webp\"}},\"version\":0}"
+        }
+      ]
+    }
+  ]
+}

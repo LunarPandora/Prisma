@@ -200,7 +200,7 @@ class DiseminasiController extends Controller
 
             if (!$user || !in_array($user->role, ['Staff LPPM', 'Superadmin'])) {
                 return ApiResponse::failed(
-                    'Hanya Staff LPPM yang dapat melakukan review diseminasi.'
+                    'Hanya Staff LPPM yang dapat melakukan pengecekan awal diseminasi.'
                 );
             }
 
@@ -227,24 +227,24 @@ class DiseminasiController extends Controller
                 );
             }
 
-            if (!$laporan->isKetuaDiseminasiApproved()) {
-                return ApiResponse::failed(
-                    'Ketua LPPM belum menyetujui diseminasi ini.'
-                );
-            }
-
             if ($validated['decision'] === 'accept') {
+
+                $ketuaAlreadyApproved = $laporan->ketua_diseminasi_approved;
 
                 $laporan->update([
                     'staff_diseminasi_approved' => true,
-                    'status' => 'Menuggu penugasan Reviewer',
+                    'status' => $ketuaAlreadyApproved
+                        ? 'Menuggu penugasan Reviewer'
+                        : 'Menunggu review dari Ketua LPPM',
                 ]);
 
                 \App\Services\NotificationService::createForRole(
                     role: 'Ketua LPPM',
                     type: 'laporan.diseminasi.staff_approved',
-                    title: 'Diseminasi siap untuk keputusan akhir',
-                    message: "Diseminasi laporan \"{$laporan->judul_penelitian}\" telah disetujui oleh Staff LPPM.",
+                    title: 'Diseminasi menunggu review Ketua LPPM',
+                    message: $ketuaAlreadyApproved
+                        ? "Diseminasi laporan \"{$laporan->judul_penelitian}\" telah dicek oleh Staff LPPM. Siap untuk penugasan reviewer."
+                        : "Diseminasi laporan \"{$laporan->judul_penelitian}\" telah dicek oleh Staff LPPM dan menunggu review Ketua LPPM.",
                     data: ['laporan_id' => $laporan->laporan_id],
                     actionUrl: \App\Helpers\NotificationUrl::forRole('Ketua LPPM', 'laporan', $laporan->kegiatan->skema_id, $laporan->laporan_id, \App\Helpers\NotificationUrl::laporanTab($laporan->kegiatan->kode_kegiatan), $laporan->jenis_penelitian),
                     key: "laporan.diseminasi.staff_approved.{$laporan->laporan_id}",
@@ -253,8 +253,8 @@ class DiseminasiController extends Controller
                 \App\Services\NotificationService::create(
                     userId: $laporan->proposal->user_id,
                     type: 'laporan.diseminasi.staff_approved',
-                    title: 'Diseminasi disetujui oleh Staff LPPM',
-                    message: "Diseminasi laporan \"{$laporan->judul_penelitian}\" telah disetujui oleh Staff LPPM. Menunggu keputusan akhir Ketua.",
+                    title: 'Diseminasi dicek oleh Staff LPPM',
+                    message: "Diseminasi laporan \"{$laporan->judul_penelitian}\" telah dicek oleh Staff LPPM. Menunggu review Ketua LPPM.",
                     data: ['laporan_id' => $laporan->laporan_id],
                     actionUrl: \App\Helpers\NotificationUrl::forRole('Dosen', 'laporan', $laporan->kegiatan->skema_id, $laporan->laporan_id, \App\Helpers\NotificationUrl::laporanTab($laporan->kegiatan->kode_kegiatan), $laporan->jenis_penelitian),
                     key: "laporan.diseminasi.staff_approved.dosen.{$laporan->laporan_id}",
@@ -262,41 +262,28 @@ class DiseminasiController extends Controller
 
             } else {
 
-                $pending = AuthorizationRequest::where('requestable_type', 'App\\Models\\Laporan')
-                    ->where('requestable_id', $laporan->laporan_id)
-                    ->where('action', 'return_diseminasi')
-                    ->where('status', 'Menunggu Persetujuan')
-                    ->exists();
+                $previousKode = \App\Helpers\KegiatanStage::previousKode($current, $laporan);
 
-                if ($pending) {
-                    return ApiResponse::failed(
-                        'Masih ada permintaan penolakan yang menunggu persetujuan Ketua LPPM.'
-                    );
+                if ($previousKode) {
+                    \App\Helpers\KegiatanStage::move($laporan, $previousKode);
                 }
 
-                AuthorizationRequest::create([
-                    'requestable_type' => 'App\\Models\\Laporan',
-                    'requestable_id'   => $laporan->laporan_id,
-                    'requested_by'     => $user->id,
-                    'action'           => 'return_diseminasi',
-                    'reason'           => $validated['catatan'] ?? 'Diseminasi ditolak oleh Staff LPPM',
-                    'current_data'     => $laporan->toArray(),
-                    'status'           => 'Menunggu Persetujuan',
-                ]);
-
-                \App\Services\NotificationService::createForRole(
-                    role: 'Ketua LPPM',
-                    type: 'laporan.diseminasi.rejection_requested',
-                    title: 'Penolakan Diseminasi diminta',
-                    message: "Staff LPPM meminta penolakan Diseminasi laporan \"{$laporan->judul_penelitian}\".",
-                    data: ['laporan_id' => $laporan->laporan_id],
-                    actionUrl: \App\Helpers\NotificationUrl::forRole('Ketua LPPM', 'laporan', $laporan->kegiatan->skema_id, $laporan->laporan_id, \App\Helpers\NotificationUrl::laporanTab($laporan->kegiatan->kode_kegiatan), $laporan->jenis_penelitian),
-                    key: "laporan.diseminasi.rejection_requested.{$laporan->laporan_id}",
-                );
-
                 $laporan->update([
-                    'status' => 'Menunggu Persetujuan Ketua LPPM',
+                    'status' => 'Revisi',
+                    'catatan' => $validated['catatan'] ?? 'Diseminasi dikembalikan untuk perbaikan oleh Staff LPPM',
+                    'staff_diseminasi_approved' => false,
+                    'ketua_diseminasi_approved' => false,
                 ]);
+
+                \App\Services\NotificationService::create(
+                    userId: $laporan->proposal->user_id,
+                    type: 'laporan.diseminasi.staff_returned',
+                    title: 'Diseminasi dikembalikan untuk perbaikan',
+                    message: "Diseminasi laporan \"{$laporan->judul_penelitian}\" dikembalikan oleh Staff LPPM untuk perbaikan.",
+                    data: ['laporan_id' => $laporan->laporan_id],
+                    actionUrl: \App\Helpers\NotificationUrl::forRole('Dosen', 'laporan', $laporan->kegiatan->skema_id, $laporan->laporan_id, \App\Helpers\NotificationUrl::laporanTab($laporan->kegiatan->kode_kegiatan), $laporan->jenis_penelitian),
+                    key: "laporan.diseminasi.staff_returned.{$laporan->laporan_id}",
+                );
             }
 
             return ApiResponse::success();

@@ -123,25 +123,58 @@ class ProposalController extends Controller
 
             $settings = Settings::first();
 
-            return ProposalAdminResource::collection(
-                $query
-                    ->orderBy('kegiatan_id')
-                    ->paginate(10)
-                    ->through(fn ($proposal) =>
-                        $this->detailKriteria(
-                            $proposal,
-                            $settings
-                        )
+            $perPage = $request->input('per_page', 50);
+            $orderedQuery = $query->orderByDesc('updated_at');
+
+            $highlightPage = null;
+            if ($request->filled('highlight_id')) {
+                $allIds = (clone $orderedQuery)->pluck('proposal_id')->toArray();
+                $pos = array_search((int) $request->highlight_id, array_map('intval', $allIds));
+                if ($pos !== false) {
+                    $highlightPage = intdiv($pos, $perPage) + 1;
+                }
+            }
+
+            $page = $highlightPage ?? $request->input('page', 1);
+
+            $paginator = $orderedQuery->paginate($perPage, ['*'], 'page', $page);
+
+            $resource = ProposalAdminResource::collection(
+                $paginator->through(fn ($proposal) =>
+                    $this->detailKriteria(
+                        $proposal,
+                        $settings
                     )
+                )
             );
+
+            $resource->additional['highlight_page'] = $highlightPage;
+
+            return $resource;
         }
 
         if ($user->role === 'Dosen') {
-            $query->where('user_id', $user->id);
+            $query->where('user_id', $user->id)->with(['kegiatan' => fn($q) => $q->withTrashed()->with('skema')]);
 
-            return ProposalDosenResource::collection(
-                $query->orderBy('kegiatan_id')->paginate(10)
-            );
+            $perPage = $request->input('per_page', 10);
+            $orderedQuery = $query->orderByDesc('updated_at');
+
+            $highlightPage = null;
+            if ($request->filled('highlight_id')) {
+                $allIds = (clone $orderedQuery)->pluck('proposal_id')->toArray();
+                $pos = array_search((int) $request->highlight_id, array_map('intval', $allIds));
+                if ($pos !== false) {
+                    $highlightPage = intdiv($pos, $perPage) + 1;
+                }
+            }
+
+            $page = $highlightPage ?? $request->input('page', 1);
+            $paginator = $orderedQuery->paginate($perPage, ['*'], 'page', $page);
+
+            $resource = ProposalDosenResource::collection($paginator);
+            $resource->additional['highlight_page'] = $highlightPage;
+
+            return $resource;
         }
 
         if ($user->role === 'Reviewer') {
@@ -151,11 +184,24 @@ class ProposalController extends Controller
 
             $settings = Settings::first();
 
-            return ProposalReviewerResource::collection(
-                $query
+            $perPage = $request->input('per_page', 50);
+            $orderedQuery = $query->orderByDesc('updated_at');
+
+            $highlightPage = null;
+            if ($request->filled('highlight_id')) {
+                $allIds = (clone $orderedQuery)->pluck('proposal_id')->toArray();
+                $pos = array_search((int) $request->highlight_id, array_map('intval', $allIds));
+                if ($pos !== false) {
+                    $highlightPage = intdiv($pos, $perPage) + 1;
+                }
+            }
+
+            $page = $highlightPage ?? $request->input('page', 1);
+
+            $resource = ProposalReviewerResource::collection(
+                $orderedQuery
                     ->with(['penugasan.reviewer', 'dokumen.currentVersion'])
-                    ->orderBy('kegiatan_id')
-                    ->paginate(10)
+                    ->paginate($perPage, ['*'], 'page', $page)
                     ->through(fn ($proposal) =>
                         $this->detailKriteria(
                             $proposal,
@@ -164,6 +210,9 @@ class ProposalController extends Controller
                         )
                     )
             );
+            $resource->additional['highlight_page'] = $highlightPage;
+
+            return $resource;
         }
     }
 

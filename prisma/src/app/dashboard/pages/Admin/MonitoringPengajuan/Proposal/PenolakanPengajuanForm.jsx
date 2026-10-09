@@ -6,6 +6,7 @@ import "quill/dist/quill.snow.css"
 
 import Button from "@/app/component/Inputs/Button"
 import Modal from "@/app/component/Modal/Modal"
+import Alert from "@/app/component/Alert/Alert"
 
 import { deleteProposal } from "@/app/component/Libraries/api/proposal"
 import { useFormSubmission } from "@/app/component/Libraries/hooks/useFormSubmission"
@@ -14,6 +15,7 @@ const QuillEditor = dynamic(() => import("react-quill-new"), { ssr: false })
 
 export default function FormPenolakanPengajuan({ refresh, close, data }){
     const [catatan, setCatatan] = useState("")
+    const [showConfirm, setShowConfirm] = useState(false)
 
     const { loading, submit } = useFormSubmission({
         onSuccess: () => {
@@ -37,6 +39,7 @@ export default function FormPenolakanPengajuan({ refresh, close, data }){
     }
 
     return (
+        <>
         <Modal
             isOpen={true}
             onClose={() => close('this')}
@@ -48,7 +51,7 @@ export default function FormPenolakanPengajuan({ refresh, close, data }){
                     <Button variant="secondary" onClick={() => close('this')}>
                         Kembali
                     </Button>
-                    <Button variant="danger" onClick={() => rejectPengajuan()} disabled={loading}>
+                    <Button variant="danger" onClick={() => setShowConfirm(true)} disabled={loading}>
                         {loading ? "Menyimpan..." : "Tolak Pengajuan"}
                     </Button>
                 </div>
@@ -67,5 +70,22 @@ export default function FormPenolakanPengajuan({ refresh, close, data }){
                 />
             </div>
         </Modal>
+
+        {showConfirm && (
+            <Alert
+                alertType="danger"
+                title="Tolak Pengajuan Proposal"
+                msg="Apakah Anda yakin ingin menolak pengajuan proposal ini? Proposal akan dihapus."
+                onCancel={() => setShowConfirm(false)}
+                onAccept={() => {
+                    rejectPengajuan()
+                }}
+                acceptText="Tolak"
+                isConfirmation={true}
+                withBackground={true}
+                loading={loading}
+            />
+        )}
+        </>
     )
 }

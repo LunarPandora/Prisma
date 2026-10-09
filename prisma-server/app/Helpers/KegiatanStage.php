@@ -133,8 +133,8 @@ class KegiatanStage
     public static function currentSkemaId($record): ?int
     {
         return $record?->kegiatan()
-            ->withTrashed()
-            ->first()
+            ?->withTrashed()
+            ?->first()
             ?->skema_id;
     }
 

@@ -73,6 +73,27 @@ class DanaController extends Controller
                 });
             }
 
+            if ($mode === 'claim') {
+                $query->where(function ($q) {
+                    $q->whereNull('claim_dana_status')
+                      ->orWhere('claim_dana_status', '!=', 'Selesai');
+                });
+            } else {
+                $query->where(function ($q) {
+                    $q->whereNull('pengembalian_dana_status')
+                      ->orWhere('pengembalian_dana_status', '!=', 'Selesai');
+                });
+            }
+
+            if ($request->boolean('pending_staff')) {
+                $query->where(function ($q) {
+                    $q->where('claim_dana_status', 'Menunggu bukti terima')
+                      ->orWhere('claim_dana_status', 'Menunggu konfirmasi admin')
+                      ->orWhere('pengembalian_dana_status', 'Menunggu Pengembalian Dana')
+                      ->orWhere('pengembalian_dana_status', 'Menunggu konfirmasi admin');
+                });
+            }
+
             $paginated = $query
                 ->orderByDesc('tgl_submit')
                 ->paginate($request->get('per_page', 10));

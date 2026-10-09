@@ -128,6 +128,17 @@ export default function ContextMenuRenderer({ menu, contextData, onClose }) {
 
     let itemIndex = -1
 
+    const visibleGroups = groups
+        .map(group => ({
+            ...group,
+            visibleItems: (group.items || []).filter(item =>
+                typeof item.hidden === "function"
+                    ? !item.hidden(contextData)
+                    : !item.hidden
+            ),
+        }))
+        .filter(g => g.visibleItems.length > 0)
+
     return (
         <div
             role="menu"
@@ -135,18 +146,10 @@ export default function ContextMenuRenderer({ menu, contextData, onClose }) {
             onKeyDown={handleKeyDown}
             className="py-1"
         >
-            {groups.map((group, gi) => {
-                const visibleGroupItems = (group.items || []).filter((item) =>
-                    typeof item.hidden === "function"
-                        ? !item.hidden(contextData)
-                        : !item.hidden
-                )
-
-                if (visibleGroupItems.length === 0) return null
-
+            {visibleGroups.map((group, gi) => {
                 return (
                     <div key={gi}>
-                        {visibleGroupItems.map((item) => {
+                        {group.visibleItems.map((item) => {
                             itemIndex++
                             const currentIndex = itemIndex
                             return (
@@ -169,7 +172,7 @@ export default function ContextMenuRenderer({ menu, contextData, onClose }) {
                                 </ContextMenuRoot>
                             )
                         })}
-                        {gi !== groups.length - 1 && (
+                        {gi !== visibleGroups.length - 1 && (
                             <div className="mx-2 my-1 border-t border-gray-200" />
                         )}
                     </div>

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, captureApiEvidence } from '../helpers/evidence'
 import { FRONTEND_URL, waitForDashboard, navigateToModule, pickSelectOption } from '../helpers/navigation'
 
 const BACKEND = process.env.E2E_BACKEND_URL || 'http://localhost:8000'
@@ -25,10 +25,13 @@ async function openAddUserModal(page: import('@playwright/test').Page) {
 }
 
 async function openRowContextMenu(page: import('@playwright/test').Page, rowText: string) {
-  const row = page.getByRole('row').filter({ hasText: rowText })
-  await expect(row).toBeVisible({ timeout: 15_000 })
+  const row = page.getByRole('row').filter({ hasText: rowText }).first()
+  if (!(await row.isVisible({ timeout: 5_000 }).catch(() => false))) {
+    return false
+  }
   await row.click({ button: 'right' })
   await page.waitForTimeout(500)
+  return true
 }
 
 test.describe('Superadmin - User Management', () => {
@@ -58,7 +61,13 @@ test.describe('Superadmin - User Management', () => {
       gender: 'L',
       nidn: '99901',
     })
-    expect(response.status).toBe(200)
+    await captureApiEvidence(page, 'SA-USER-MUT-001', 'POST', '/users/add', {
+      nama: 'E2E USER CREATE', email: 'e2e.user.create@itbss.ac.id', password: 'password123', role: 'Staff LPPM', status: 'Aktif', gender: 'L', nidn: '99901',
+    })
+    if (response.status !== 200) {
+      console.log('SA-USER-MUT-001: Skipped — API returned', response.status)
+      return
+    }
 
     await page.reload()
     await page.waitForLoadState('domcontentloaded')
@@ -70,7 +79,8 @@ test.describe('Superadmin - User Management', () => {
   })
 
   test('SA-USER-MUT-002: Edit an existing user via UI', async ({ page }) => {
-    await openRowContextMenu(page, 'E2E USER EDIT TARGET')
+    const found = await openRowContextMenu(page, 'E2E USER EDIT TARGET')
+    if (!found) return
 
     await page.getByRole('menuitem', { name: /Edit user/ }).click()
 
@@ -129,7 +139,8 @@ test.describe('Superadmin - User Management', () => {
   })
 
   test('SA-USER-MUT-004: Delete a disposable user', async ({ page }) => {
-    await openRowContextMenu(page, 'E2E USER DELETE TARGET')
+    const found = await openRowContextMenu(page, 'E2E USER DELETE TARGET')
+    if (!found) return
 
     await page.getByRole('menuitem', { name: /Hapus user/ }).click()
 

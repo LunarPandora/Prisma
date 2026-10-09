@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import dynamic from "next/dynamic"
 import "quill/dist/quill.snow.css"
@@ -17,13 +17,13 @@ import Alert from "@/app/component/Alert/Alert"
 import TextTag from "@/app/component/Tags/TextTag"
 import Badge from "@/app/component/Display/Badge"
 import Button from "@/app/component/Inputs/Button"
+import { showToast } from "@/app/component/Toast/Toast"
 import { LAPORAN_STATUS_COLORS, LAPORAN_KODE_COLORS, KODE_KEGIATAN_SHORT_LABELS, JENIS_PENELITIAN_COLORS, buildLaporanTabs } from "@/app/component/Libraries/config/statusColors"
 
 const QuillEditor = dynamic(() => import("react-quill-new"), { ssr: false })
 
 import { useContextMenu } from "@/app/component/Libraries/hooks/useContextMenu"
 import { useQueryBuilder } from "@/app/component/Libraries/hooks/useQueryBuilder"
-import useHighlight from "@/app/component/Libraries/hooks/useHighlight"
 
 import { getLaporan, adminDecideLaporan } from "@/app/component/Libraries/api/laporan"
 import { staffDecideDiseminasi, authorizeDiseminasiRejection, finalDecisionDiseminasi } from "@/app/component/Libraries/api/diseminasi"
@@ -48,7 +48,7 @@ import SelectInput from "@/app/component/Inputs/SelectInput"
 |--------------------------------------------------------------------------
 */
 
-export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, initialTab, initialJenis }) {
+export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, initialTab, initialJenis, onHighlightComplete }) {
 
     const [semesterFilter, setSemesterFilter] = useState("both")
 
@@ -63,14 +63,22 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
 
     const [activeTab, setActiveTab] = useState("PROSES_PENELITIAN")
 
+    const initialAppliedRef = useRef(false)
+    const prevTypeFilterRef = useRef(typeFilter)
+
     useEffect(() => {
         if (initialTab) setActiveTab(initialTab)
+        initialAppliedRef.current = true
     }, [initialTab])
 
     // Reset activeTab when typeFilter changes to keep view consistent
+    // Skip on initial mount — initialTab handles that
     useEffect(() => {
-        if (!initialTab && !initialJenis) setActiveTab(tabs[0]?.key || "PROSES_PENELITIAN")
-    }, [typeFilter])
+        if (!initialAppliedRef.current) return
+        if (prevTypeFilterRef.current === typeFilter) return
+        prevTypeFilterRef.current = typeFilter
+        setActiveTab(tabs[0]?.key || "PROSES_PENELITIAN")
+    }, [typeFilter, tabs])
 
     const qb = useQueryBuilder()
     const [qs, setQs] = useState("")
@@ -79,17 +87,6 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
 
     const [refreshKey, setRefreshKey] = useState(0)
     const [tempRow, setTempRow] = useState(null)
-
-    const highlight = useHighlight(2000)
-
-    useEffect(() => {
-        if (highlightId) {
-            const timer = setTimeout(() => {
-                highlight(`row-${highlightId}`, { scroll: true })
-            }, 500)
-            return () => clearTimeout(timer)
-        }
-    }, [highlightId, highlight, refreshKey])
 
     const [showLogbookModal, setShowLogbookModal] = useState(false)
     const [showViewDetailModal, setShowViewDetailModal] = useState(false)
@@ -107,30 +104,19 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
     const [buktiPenerimaanFile, setBuktiPenerimaanFile] = useState(null)
     const [loadingBuktiTransfer, setLoadingBuktiTransfer] = useState(false)
     const [loadingBuktiPenerimaan, setLoadingBuktiPenerimaan] = useState(false)
+    const [showConfirmBuktiTransfer, setShowConfirmBuktiTransfer] = useState(false)
+    const [showConfirmBuktiPenerimaan, setShowConfirmBuktiPenerimaan] = useState(false)
 
     const [catatan, setCatatan] = useState("")
+
+    const [showReturnLaporanModal, setShowReturnLaporanModal] = useState(false)
+    const [returnLaporanData, setReturnLaporanData] = useState(null)
+    const [returnLaporanReason, setReturnLaporanReason] = useState("")
+    const [returnLaporanLoading, setReturnLaporanLoading] = useState(false)
 
     const user = useUserStore(state => state.user)
     const access = getModuleAccess("staffmonitoringprogresslaporan", user?.role)
     const isKetua = user?.role === "Ketua LPPM"
-
-    const tabMaxActions = useMemo(() => isKetua ? ({
-        PROSES_PENELITIAN: 2,
-        PROSES_PKM: 2,
-        PUBLIKASI: 3,
-        DISEMINASI: 3,
-        CLAIM_DANA: 2,
-        PENGEMBALIAN_DANA: 2,
-        SELESAI: 1,
-    }) : ({
-        PROSES_PENELITIAN: 5,
-        PROSES_PKM: 5,
-        PUBLIKASI: 5,
-        DISEMINASI: 5,
-        CLAIM_DANA: 5,
-        PENGEMBALIAN_DANA: 5,
-        SELESAI: 5,
-    }), [isKetua])
 
     useEffect(() => {
         qb.resetFilters()
@@ -199,7 +185,12 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
         })
 
     const rowActions = useMemo(() =>
-        (menus.row ?? []).flatMap(group => group.items ?? []),
+        (menus.row ?? []).flatMap(group =>
+            (group.items ?? []).map(a => ({
+                ...a,
+                hidden: a.hidden || group.hidden,
+            }))
+        ),
     [menus])
 
     function refreshTable() {
@@ -251,21 +242,31 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
     }
 
     async function handleStaffReturnLaporan(r) {
-        const reason = prompt('Alasan pengembalian laporan untuk perbaikan:')
-        if (!reason || reason.length < 10) {
-            alert('Alasan harus minimal 10 karakter')
+        setReturnLaporanData(r)
+        setReturnLaporanReason("")
+        setShowReturnLaporanModal(true)
+    }
+
+    async function submitReturnLaporan() {
+        if (!returnLaporanReason || returnLaporanReason.length < 10) {
+            showToast("Alasan harus minimal 10 karakter.", "error")
             return
         }
+        setReturnLaporanLoading(true)
         try {
             await createAuthorizationRequest({
                 requestable_type: 'Laporan',
-                requestable_id: r.laporan_id,
+                requestable_id: returnLaporanData.laporan_id,
                 action: 'return_laporan_for_revision',
-                reason,
+                reason: returnLaporanReason,
             })
         } catch(err) {
             console.error(err)
         } finally {
+            setReturnLaporanLoading(false)
+            setShowReturnLaporanModal(false)
+            setReturnLaporanData(null)
+            setReturnLaporanReason("")
             refreshTable()
         }
     }
@@ -528,11 +529,12 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
                     onContextRequest={(e, type, data, source) =>
                         openMenu(e, type, data, source)
                     }
-                    maxActions={tabMaxActions[activeTab] ?? 4}
                     rowActions={rowActions}
                     onRefresh={refreshTable}
                     hideActions={isKetua && activeTab === "CLAIM_DANA" && typeFilter === "PkM"}
                     rowHighlightKey="laporan_id"
+                    highlightId={highlightId}
+                    onHighlightComplete={onHighlightComplete}
                 columns={[
                     {
                         header: "Jenis",
@@ -613,19 +615,12 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
                                     <Badge color={LAPORAN_KODE_COLORS[kodeLabel] || 'gray'} size="sm" className="w-fit">
                                         {kodeLabel}
                                     </Badge>
-                                    <Badge color={LAPORAN_STATUS_COLORS[value]?.color || 'gray'} size="sm" intensity="light" className="w-fit">
-                                        {value || "-"}
+                                    <Badge color={LAPORAN_STATUS_COLORS[value?.toLowerCase()]?.color || 'gray'} size="sm" className="w-fit">
+                                        {LAPORAN_STATUS_COLORS[value?.toLowerCase()]?.label || value || "-"}
                                     </Badge>
                                     {isDiseminasi && (
                                         <div className="flex flex-col gap-1 mt-0.5">
                                             <div className="flex gap-1">
-                                                <Badge
-                                                    color={row.detail?.ketua_diseminasi_approved ? 'green' : 'gray'}
-                                                    size="xs"
-                                                    intensity="light"
-                                                >
-                                                    Ketua: {row.detail?.ketua_diseminasi_approved ? "✓ Setuju" : "○ Belum"}
-                                                </Badge>
                                                 <Badge
                                                     color={row.detail?.has_pending_diseminasi_rejection ? 'red' : row.detail?.staff_diseminasi_approved ? 'green' : 'gray'}
                                                     size="xs"
@@ -634,6 +629,13 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
                                                     Staff: {row.detail?.has_pending_diseminasi_rejection
                                                         ? "✗ Ditolak"
                                                         : row.detail?.staff_diseminasi_approved ? "✓ Setuju" : "○ Belum"}
+                                                </Badge>
+                                                <Badge
+                                                    color={row.detail?.ketua_diseminasi_approved ? 'green' : 'gray'}
+                                                    size="xs"
+                                                    intensity="light"
+                                                >
+                                                    Ketua: {row.detail?.ketua_diseminasi_approved ? "✓ Setuju" : "○ Belum"}
                                                 </Badge>
                                             </div>
                                         </div>
@@ -746,7 +748,7 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
                     <Alert
                         alertType="warning"
                         title="Setujui Diseminasi"
-                        msg="Setujui diseminasi laporan ini? Laporan akan masuk tahap review Staff LPPM."
+                        msg="Setujui diseminasi laporan ini? Laporan akan masuk tahap penugasan reviewer."
                         onCancel={() => setShowKetuaApproveModal(false)}
                         onAccept={() => runKetuaDecide("accept")}
                         acceptText="Setujui"
@@ -816,7 +818,7 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
                     <Alert
                         alertType="warning"
                         title="Setujui Diseminasi"
-                        msg="Setujui diseminasi sebagai Staff LPPM? Reviewer dapat ditugaskan setelah ini."
+                        msg="Setujui diseminasi sebagai Staff LPPM? Laporan akan menunggu review Ketua LPPM."
                         onCancel={() => setShowStaffApproveModal(false)}
                         onAccept={() => runStaffDecide("accept")}
                         acceptText="Setujui"
@@ -838,7 +840,7 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
                         <div className="bg-white rounded-xl p-6 w-full max-w-xl flex flex-col gap-4">
                             <h2 className="text-xl font-medium">Tolak Diseminasi</h2>
                             <p className="text-gray-600">
-                                Tolak diseminasi sebagai Staff LPPM? Berikan alasan penolakan. Permintaan ini akan dikirim ke Ketua LPPM untuk persetujuan.
+                                Kembalikan diseminasi untuk perbaikan? Laporan akan dikembalikan ke tahap sebelumnya.
                             </p>
                             <QuillEditor
                                 theme="snow"
@@ -981,7 +983,7 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
                                     Batal
                                 </Button>
                                 <Button
-                                    onClick={runUploadBuktiTransfer}
+                                    onClick={() => setShowConfirmBuktiTransfer(true)}
                                     disabled={!buktiTransferFile || loadingBuktiTransfer}
                                 >
                                     {loadingBuktiTransfer ? "Mengupload..." : "Upload"}
@@ -1039,7 +1041,7 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
                                     Batal
                                 </Button>
                                 <Button
-                                    onClick={runUploadBuktiPenerimaan}
+                                    onClick={() => setShowConfirmBuktiPenerimaan(true)}
                                     disabled={!buktiPenerimaanFile || loadingBuktiPenerimaan}
                                 >
                                     {loadingBuktiPenerimaan ? "Mengupload..." : "Upload"}
@@ -1055,6 +1057,82 @@ export default function MonitoringLaporanAdmin({ skema, onBack, highlightId, ini
                 closeMenu={closeMenu}
                 menus={menus}
             />
+
+            <AnimatePresence>
+                {showReturnLaporanModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 will-change-auto"
+                    >
+                        <div className="bg-white rounded-xl p-6 w-full max-w-xl flex flex-col gap-4">
+                            <h2 className="text-xl font-medium">Kembalikan Laporan</h2>
+                            <p className="text-gray-600">
+                                Kembalikan laporan ke peneliti untuk direvisi. Berikan catatan agar peneliti tahu apa yang perlu diperbaiki.
+                            </p>
+                            <textarea
+                                value={returnLaporanReason}
+                                onChange={(e) => setReturnLaporanReason(e.target.value)}
+                                placeholder="Tulis catatan revisi di sini..."
+                                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black/20"
+                                rows={4}
+                            />
+                            <div className="flex gap-2 justify-end mt-2">
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        setShowReturnLaporanModal(false)
+                                        setReturnLaporanData(null)
+                                        setReturnLaporanReason("")
+                                    }}
+                                >
+                                    Batal
+                                </Button>
+                                <Button
+                                    variant="danger"
+                                    onClick={submitReturnLaporan}
+                                    disabled={returnLaporanLoading || returnLaporanReason.length < 10}
+                                >
+                                    {returnLaporanLoading ? "Memproses..." : "Kembalikan"}
+                                </Button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {showConfirmBuktiTransfer && (
+                <Alert
+                    alertType="warning"
+                    title="Upload Bukti Transfer"
+                    msg="Apakah Anda yakin ingin mengupload bukti transfer dana ini?"
+                    onCancel={() => setShowConfirmBuktiTransfer(false)}
+                    onAccept={() => {
+                        runUploadBuktiTransfer()
+                    }}
+                    acceptText="Upload"
+                    isConfirmation={true}
+                    withBackground={true}
+                    loading={loadingBuktiTransfer}
+                />
+            )}
+
+            {showConfirmBuktiPenerimaan && (
+                <Alert
+                    alertType="warning"
+                    title="Upload Bukti Penerimaan"
+                    msg="Apakah Anda yakin ingin mengupload bukti penerimaan pengembalian dana ini?"
+                    onCancel={() => setShowConfirmBuktiPenerimaan(false)}
+                    onAccept={() => {
+                        runUploadBuktiPenerimaan()
+                    }}
+                    acceptText="Upload"
+                    isConfirmation={true}
+                    withBackground={true}
+                    loading={loadingBuktiPenerimaan}
+                />
+            )}
         </div>
     )
 }

@@ -13,7 +13,7 @@ import {
 import Button from "@/app/component/Inputs/Button"
 import TextInput from "@/app/component/Inputs/TextInput"
 import Modal from "@/app/component/Modal/Modal"
-import ConfirmModal from "@/app/component/Modal/ConfirmModal"
+import Alert from "@/app/component/Alert/Alert"
 import { showToast } from "@/app/component/Toast/Toast"
 import { useFormSubmission } from "@/app/component/Libraries/hooks/useFormSubmission"
 
@@ -150,7 +150,7 @@ export default function RealisasiAnggaranForm({
                 closeOnBackdrop={false}
             >
                 {/* ITEMS TABLE */}
-                <div className="border rounded-lg overflow-hidden">
+                <div className="border rounded-lg overflow-hidden mb-3">
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50">
                             <tr>
@@ -268,7 +268,7 @@ export default function RealisasiAnggaranForm({
                         <div className="flex justify-end gap-2">
                             <Button
                                 onClick={resetForm}
-                                className="bg-gray-100 text-gray-600"
+                                className="bg-gray-400 text-gray-600"
                             >
                                 Batal
                             </Button>
@@ -291,18 +291,21 @@ export default function RealisasiAnggaranForm({
 
             </Modal>
 
-            <ConfirmModal
-                isOpen={deleteConfirmIndex !== null}
-                onClose={() => setDeleteConfirmIndex(null)}
-                onConfirm={() => {
-                    handleDelete(deleteConfirmIndex)
-                    setDeleteConfirmIndex(null)
-                }}
-                title="Hapus Item"
-                message="Apakah Anda yakin ingin menghapus item ini?"
-                confirmText="Hapus"
-                variant="danger"
-            />
+            {deleteConfirmIndex !== null && (
+                <Alert
+                    alertType="danger"
+                    title="Hapus Item"
+                    msg="Apakah Anda yakin ingin menghapus item ini?"
+                    onCancel={() => setDeleteConfirmIndex(null)}
+                    onAccept={() => {
+                        handleDelete(deleteConfirmIndex)
+                        setDeleteConfirmIndex(null)
+                    }}
+                    acceptText="Hapus"
+                    isConfirmation={true}
+                    withBackground={true}
+                />
+            )}
         </>
     )
 }

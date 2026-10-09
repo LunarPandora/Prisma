@@ -19,29 +19,7 @@ export const createProposalAdminMenus = ({
     main: [],
 
     row: [
-        // ── Dosen upload: Menunggu review dari Ketua LPPM ──
-        group(
-            [
-                item("Cek pengajuan", handleShow, {
-                    icon: faEye,
-                    enabled: (r) => access.read && r.status === "Menunggu review dari Ketua LPPM"
-                }),
-                item("Setujui Proposal", handleKetuaDecideSeleksi, {
-                    icon: faCheck,
-                    enabled: (r) => access.update && r.status === "Menunggu review dari Ketua LPPM" && user?.role === "Ketua LPPM"
-                }),
-                item("Tolak Proposal", handleTolak, {
-                    icon: faTrashCan,
-                    enabled: (r) => access.delete && r.status === "Menunggu review dari Ketua LPPM" && user?.role === "Ketua LPPM",
-                    danger: true
-                })
-            ],
-            {
-                hidden: (r) => r.status !== "Menunggu review dari Ketua LPPM"
-            }
-        ),
-
-        // ── Ketua approved: Menunggu review Staff LPPM ──
+        // ── Dosen upload: Menunggu review Staff LPPM (Staff screens first) ──
         group(
             [
                 item("Cek pengajuan", handleShow, {
@@ -65,6 +43,28 @@ export const createProposalAdminMenus = ({
             ],
             {
                 hidden: (r) => r.status !== "Menunggu review Staff LPPM"
+            }
+        ),
+
+        // ── Staff approved: Menunggu review dari Ketua LPPM (Ketua reviews second) ──
+        group(
+            [
+                item("Cek pengajuan", handleShow, {
+                    icon: faEye,
+                    enabled: (r) => access.read && r.status === "Menunggu review dari Ketua LPPM"
+                }),
+                item("Setujui Proposal", handleKetuaDecideSeleksi, {
+                    icon: faCheck,
+                    enabled: (r) => access.update && r.status === "Menunggu review dari Ketua LPPM" && user?.role === "Ketua LPPM"
+                }),
+                item("Tolak Proposal", handleTolak, {
+                    icon: faTrashCan,
+                    enabled: (r) => access.delete && r.status === "Menunggu review dari Ketua LPPM" && user?.role === "Ketua LPPM",
+                    danger: true
+                })
+            ],
+            {
+                hidden: (r) => r.status !== "Menunggu review dari Ketua LPPM"
             }
         ),
 

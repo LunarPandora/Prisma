@@ -36,7 +36,7 @@ export const createKetuaLaporanMenus = ({
         }),
     ])
 
-    // Diseminasi: before reviewers assigned → Review, Setujui, Tolak
+    // Diseminasi: before reviewers assigned → Review, Setujui, Tolak (Ketua approves second)
     const diseminasiPreReview = group([
         item("Review Diseminasi", handleViewDetail, {
             icon: faEye,
@@ -46,12 +46,14 @@ export const createKetuaLaporanMenus = ({
             icon: faCheck,
             enabled: (r) =>
                 access?.update &&
+                r.detail?.staff_diseminasi_approved &&
                 !r.detail?.ketua_diseminasi_approved,
         }),
         item("Tolak Diseminasi", handleKetuaReject, {
             icon: faTimes,
             enabled: (r) =>
                 access?.update &&
+                r.detail?.staff_diseminasi_approved &&
                 !r.detail?.ketua_diseminasi_approved,
             danger: true,
         }),

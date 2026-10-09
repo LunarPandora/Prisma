@@ -89,11 +89,10 @@ export default function Prodi(){
                     className="w-full"
                     roundedStyle="rounded-lg rounded-tl-none"
                     onContextRequest={(e, type, data, source) => openMenu(e, type, data, source)}
-                    maxActions={2}
                     onRefresh={refreshTable}
                     rowActions={[
-                        { icon: faEdit, text: "Edit", action: handleEdit, enabled: access.update },
-                        { icon: faTrashCan, text: "Hapus", action: handleDelete, enabled: access.delete, danger: true }
+                        { icon: faEdit, text: "Edit prodi", action: handleEdit, enabled: access.update },
+                        { icon: faTrashCan, text: "Hapus prodi", action: handleDelete, enabled: access.delete, danger: true }
                     ]}
                     columns={[
                         { header: "Nama Prodi", key: "nama_prodi" },

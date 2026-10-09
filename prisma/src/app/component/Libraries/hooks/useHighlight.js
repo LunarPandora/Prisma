@@ -20,18 +20,23 @@ function removeHighlight(el) {
 export default function useHighlight(duration = DEFAULT_DURATION) {
     const timersRef = useRef([])
     const observerRef = useRef(null)
+    const intervalRef = useRef(null)
 
-    const clearAllTimers = useCallback(() => {
+    const clearAll = useCallback(() => {
         timersRef.current.forEach(t => clearTimeout(t))
         timersRef.current = []
         if (observerRef.current) {
             observerRef.current.disconnect()
             observerRef.current = null
         }
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+            intervalRef.current = null
+        }
     }, [])
 
     const highlightOne = useCallback((el, ms) => {
-        clearAllTimers()
+        clearAll()
 
         applyHighlight(el)
 
@@ -41,55 +46,63 @@ export default function useHighlight(duration = DEFAULT_DURATION) {
         }, ms)
 
         timersRef.current.push(timer)
-    }, [clearAllTimers])
+    }, [clearAll])
 
     const highlight = useCallback((targetId, options = {}) => {
         const { scroll = true, duration: overrideDuration } = options
         const ms = overrideDuration ?? duration
 
-        clearAllTimers()
+        clearAll()
 
-        const el = document.querySelector(`[data-highlight="${targetId}"]`)
-        if (el) {
-            doHighlight(el, ms, scroll)
-            return
+        const findAndHighlight = () => {
+            const el = document.querySelector(`[data-highlight="${targetId}"]`)
+            if (el) {
+                clearAll()
+
+                const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                const effectiveMs = prefersReduced ? Math.min(ms, 400) : ms
+
+                if (scroll) {
+                    const rect = el.getBoundingClientRect()
+                    const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight
+                    if (!isVisible) {
+                        el.scrollIntoView({ behavior: "smooth", block: "center" })
+                    }
+                }
+
+                highlightOne(el, effectiveMs)
+                return true
+            }
+            return false
         }
 
+        if (findAndHighlight()) return
+
         observerRef.current = new MutationObserver(() => {
-            const found = document.querySelector(`[data-highlight="${targetId}"]`)
-            if (found) {
-                observerRef.current?.disconnect()
-                observerRef.current = null
-                doHighlight(found, ms, scroll)
-            }
+            findAndHighlight()
         })
         observerRef.current.observe(document.body, { childList: true, subtree: true })
 
+        let attempts = 0
+        intervalRef.current = setInterval(() => {
+            attempts++
+            if (findAndHighlight() || attempts >= 25) {
+                if (intervalRef.current) {
+                    clearInterval(intervalRef.current)
+                    intervalRef.current = null
+                }
+            }
+        }, 200)
+
         const fallbackTimer = setTimeout(() => {
-            observerRef.current?.disconnect()
-            observerRef.current = null
+            clearAll()
         }, 5000)
         timersRef.current.push(fallbackTimer)
-    }, [duration, clearAllTimers])
-
-    function doHighlight(el, ms, scroll) {
-        const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        const effectiveMs = prefersReduced ? Math.min(ms, 400) : ms
-
-        if (scroll) {
-            const rect = el.getBoundingClientRect()
-            const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight
-            if (!isVisible) {
-                el.scrollIntoView({ behavior: "smooth", block: "center" })
-            }
-        }
-
-        highlightOne(el, effectiveMs)
-    }
+    }, [duration, clearAll, highlightOne])
 
     useEffect(() => {
-        return () => clearAllTimers()
-    }, [clearAllTimers])
+        return () => clearAll()
+    }, [clearAll])
 
     return highlight
 }
